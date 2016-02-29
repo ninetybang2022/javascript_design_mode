@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>基于原型的继承</title>
+</head>
+<body>
+    <script type="text/javascript">
+        /*
+            所有数据都是对象是javascript中基本类型：
+                undefine number boolean string function object这些全是对象
+                除了undefine一切都是对象
+
+            javascript的根对象：Object.prototype对象。Object.prototype对象是一个空的对象。
+            在javascript中的每一个对象都是继承自Object.prototype对象克隆而来的
+
+        */
+        var obj1 = new Object();
+        var obj2 = {};
+        //Object.getPrototypeOf(obj1) //获得一个对象的原型
+        console.log(Object.getPrototypeOf(obj1) === Object.prototype);
+        console.log(Object.getPrototypeOf(obj2) === Object.prototype);
+
+        /*
+            在javascript中要得到一个对象，不是通过实例化类，而是找到一个对象作为原型克隆它
+            在javascript语言里，并不需要关心克隆的细节，因为这是引擎内部负责实现的。
+        */
+        //使用new构造一个对象
+        function Person(name){
+            this.name = name;
+        }
+        Person.prototype.getName =  function(){
+            return this.name;
+        }
+        //这里的Person并不是类，而是构造函数，javascript的函数即可以作为普通函数调用，也可以作为构造函数调用。
+        /*
+            当使用new运算符来调用函数时，此时的函数就是一个构造器，用new运算符来创建对象的过程。
+            实际上也只是克隆Object.prototype对象，再进行一些其他额外操作的过程。
+
+        */
+        //这里的person只是一个构造器
+        var a = new Person('sven');
+        console.log(a.name);
+        console.log(a.getName());
+
+        console.log(Object.getPrototypeOf(a) === Person.prototype);
+
+
+
+    </script>
+</body>
+</html>

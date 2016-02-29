@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>多态实例。地图API</title>
+</head>
+<body>
+    <script type="text/javascript">
+        /*
+            这里默认使用的是google地图  为了让renderMap函数保持一定的弹性。
+            可以使用条件分支来让renderMap函数同时支持谷歌和百度地图
+        */
+        var googleMap = {
+            show:function(){
+                console.log('开始渲染谷歌地图')
+            }
+        }
+
+        var baiduMap = {
+            show:function(){
+                console.log('开始渲染百度地图')
+            }
+        }
+
+        var sosoMap = {
+            show:function(){
+                console.log('soso地图')
+            }
+        }
+
+        //这里使用其他类型的地图那么添加分支if来处理  一旦需要替换其他地图，那就要发动renderMap函数
+        //但是可以抽像出来
+        //不好的实践
+        // var renderMap = function(type){
+        //     if(type==='google')
+        //     {
+        //         googleMap.show();  //开始渲染谷歌地图
+        //     }
+        //     else if(type==='baidu')
+        //     {
+        //         baiduMap.show();  //开始渲染谷歌地图
+        //     }
+        // }
+
+        //比较好的实践，因为他们都实现了show方法
+        var renderMap = function(type)
+        {
+            if(type.show instanceof Function)
+            {
+                type.show();
+            }
+        }
+
+        /*
+            现在这段代码中的多态性。当我们向google地图对象和百度地图对象分别发出 展示地图的消息
+            ，就会分别去调用他们的show方法。对象的多态性提示我们，做什么  和  怎么去做  是可以分开的。
+            即使以后增加其他地图renderMap函数仍然不需要做任何修改
+
+
+            注意：大部分的设计模式都离不开  “多态的思想”
+        */
+
+
+        renderMap(baiduMap);
+        renderMap(googleMap);
+        renderMap(sosoMap);
+    </script>
+</body>
+</html>

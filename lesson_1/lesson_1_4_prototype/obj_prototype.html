@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>对象原型——5</title>
+</head>
+<body>
+    <script type="text/javascript">
+        /*
+            就javascript的真正实现来说，其实并不能说对象有原型，而只能说对象的构造器有原型
+            对于  “对象把请求委托给它自己的原型”  这句话更好的说法是：对象把委托给它的构造器的原型
+            javascript给对象提供了一个名为__proto__的隐藏属性，某个对象的__proto__属性默认会指向它的构造
+            器的原型对象，即{Constructor}.prototype
+        */
+        var a = new Object();
+        //实际上__proto__是对象构造器的原型
+        console.log(a.__proto__ === Object.prototype); //这里是返回true
+
+        /*
+            如果对象无法响应某个语法 ，那么他会去委托对象构造器的原型
+
+            比如 有一个对象 Dog 继承于 Animal 继承于 Object
+            Dog ---> Animal ----> Object 这样传递方法
+
+            而在javascript中，每个对象都是从Object.prototype对象克隆而来的
+
+            实际上虽然javascript的对象最初都是由Object.prototype克隆而来。但是对象构造器的原型
+            并不仅限于Object.prototype上，而是可以动态指向其他对象的。这样一来，当对象a需要借用对象b的能力 时
+            可以选择性的把对象a的构造器的原型指向对象b。从而达到继承的效果
+        */
+
+        var obj = {name:'sven'};
+        var A = function(){};
+        A.prototype = obj;
+        var a = new A();
+        console.log(a.name);  //输出sven
+        /*
+            上面这代码引擎会做：1、首先尝试遍历A中所有属性但是没有找到name
+                              2、查找name属性的这个请求被委托给对象a的构造器的原型，它被a.__proto__记录着并且指向A.prototype
+                                 而A.prototype被设置为对象obj
+                              3、在对象obj中找到了name属性，并返回它的值
+        */
+
+        /*
+         * 当期望得到一个“类”继承自另一个“类”的效果时，往往会用下厕所 代码来模拟实现
+         */
+         var A = function(){}
+         A.prototype = {name:'lwb'};
+         var B = function(){}
+         B.prototype = new A(); //这样B就继承了A中所有prototype中的方法和属性
+        var b = new B();
+        console.log(b.name);
+        //如果上面的对象没有找到name属性那么他会找到Object这个对象中如果也没有那么就返回undefine
+
+
+
+    </script>
+</body>
+</html>

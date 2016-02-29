@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>使用继承实现多态</title>
+</head>
+<body>
+    <button id="loginOpenBtn">登陆窗口</button>
+    <div id="loginModalArea" style="display:none;">
+        这是登陆模态框
+    </div>
+    <button id="regOpenBtn">注册窗口</button>
+    <div id="regMoalArea" style="display:none;">
+        这是注册模态框
+    </div>
+    <script type="text/javascript">
+        /*
+            使用继承实现多态
+            使用继承实现多态，是让对象表现出多态性的常用手段。继承通常包括实现继承和接口继承
+        */
+        /*
+            javascript的多态
+            多态的思想实际上是把“做什么” 和 “谁去做” 分离开。
+            要实现这个，归根结底先要消除类型之间的耦合性。如果类型之间的耦合关系没有被消除。
+            那么在makeSound方法中指定发出叫声的对象是某个类型，它就不可能再被替换为另一个类型。
+            在java中是向上转型的方式实现。
+            （也就是在makeSound(超类名)) 这样实现型参的时候传入一个超类名
+
+            因为javascript的变量类型在运行期是可变的。一个js对象即可表示Duck类型的对象
+            又可以表示Chicken对象这意味着js对象的多态性是与生俱来的。
+
+            由此可见，某一种动物能否发出叫声，只取决于它有没有makeSound方法。而不取决于它是什么类型的对象
+            这里不存在任何程序上的  “类型耦合”  在javascript 中并不需要向上转型之类的技术实现多态
+        */
+
+        /*
+            多态的好处在于：不必再向对象询问“你是什么类型” 而后根据得到的答案调用对象的某个行为
+            你只管调用该行为就是了，其他的一切多态机制都会为你安排妥当
+
+                 “多态最根本的作用就是通过把过程化的条件分支语句转化为对象的多态性，从而消除这些条件分支语句”
+
+            "每个对象负责他们自己的行为。所以这些对象可以根据同一个消息，有条不序地分别进行各自的工作"
+        */
+
+        //例子，比如有一个注册和一个登陆的模态框  那他么他都需要关闭和开启的方法
+        var modal = {
+            closeHandle:function(){
+                this.modalBoxArea.style.display = 'none';
+                console.log('关闭功能');
+            },
+            openHandle:function(){
+                this.modalBoxArea.style.display = 'block';
+                console.log('开启功能');
+            },
+            openArea:function(){
+                this.openHandle();
+            },
+            
+        }
+
+        //登陆模态框
+        var loginModal = Object.create(modal);
+        loginModal.login = function()
+        {
+            console.log('登录方法');
+        }
+        loginModal.modalBoxArea = document.querySelector('#loginModalArea');
+        //注册模态框
+        var regModal = Object.create(modal);
+        regModal.modalBoxArea = document.querySelector('#regMoalArea');
+        regModal.reg = function(){
+            console.log('注册方法');
+        }
+
+
+        //登陆窗口打开功能
+        var loginOpenBtn = document.querySelector('#loginOpenBtn');
+        var regOpenBtn   = document.querySelector('#regOpenBtn');
+        loginOpenBtn.addEventListener('click',function(){
+            loginModal.openArea();
+        })
+        loginOpenBtn.addEventListener('click',function(){
+            loginModal.openArea();
+        })
+
+
+
+    </script>
+</body>
+</html>

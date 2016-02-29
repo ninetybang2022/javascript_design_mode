@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>原型模型和基于原型继承的javascript对象系统</title>
+</head>
+<body>
+    <script type="text/javascript">
+        /*
+            从设计模式的角度讲，原型模式是用于创建对象的一种模式。
+            如果要创建一个对象，一种方法是先指定它的类型，然后通过类来创建这个对象
+            原型模式 选择了另外一种方式，我们不再关心对象的具体类型，而是找到这一个对象
+            然后通过克隆来创建一个一模一样的对象
+
+            原型模式的实现关键，是语言本身是否提供了clone方法，在ES5中使用Object.create()方法来实现
+
+        */
+
+        //代码实例
+        var Plane = function(){
+            this.blod = 100;
+            this.attackLevel = 1;
+            this.defenseLevel = 1;
+        }
+        var plane = new Plane();
+        plane.blod = 500;
+        plane.attackLevel = 10;
+        plane.defenseLevel = 7;
+        //实现了克隆一个对象
+        var clonePlane = Object.create(plane);
+        console.log(clonePlane);
+        //实现兼容object.create方法
+        Object.create = Object.create || function(obj)
+        {
+            var F = function(){};
+            F.prototype = obj;  //关键在这里将一个对象的prototype指向了另一个对象就实现了继承
+            return new F();
+        }
+    </script>
+</body>
+</html>

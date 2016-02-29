@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>鸭子类型</title>
+</head>
+<body>
+    <script type="text/javascript">
+        /**
+            语言可以分为两类：静态类型语言   动态类型
+            由于无需进行类型检测，可以尝试调用任何对象的任意方法。而无需考虑它原本是否被设计为拥有该方法。
+            这一切都建立在鸭子类型duck typeing的概念上，鸭子类型通俗说法是：它走路向鸭子，那么他就是鸭子，他叫起来向鸭子他就是鸭子
+
+            鸭子类型：只关注实现不关注对象
+
+            利用鸭子类型的思想：不必借助超类型的帮助，就能轻松地在动态类型语言中实现一个原则：
+                              面向接口编程，而不是面向实现编程
+         */
+         var duck = {
+             duckSinging:function(){
+                 console.log('gagaga');
+             }
+         };
+         var chicken ={
+             duckSinging:function(){
+                 console.log('gagaga');
+             }
+         };
+         var choir = [];
+         var joinChoir = function(animal)
+         {
+             //这里加入的条件为，只要存在一个为duckSinging的方法那么他就可以加入到 choir数组中
+             //不用去关心他是什么  对象
+             if(animal && typeof animal.duckSinging === 'function')
+             {
+                 choir.push(animal);
+             }
+             console.log('已经加入');
+             console.log('数量为:'+choir.length);
+         }
+        //将duck加入
+         joinChoir(duck);
+        //将chicken加入
+         joinChoir(chicken);
+    </script>
+</body>
+</html>
