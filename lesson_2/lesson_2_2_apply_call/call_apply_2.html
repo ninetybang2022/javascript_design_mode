@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>call和apply的区别</title>
+</head>
+<body>
+    <script type="text/javascript">
+        /*
+            call和apply的区别
+            Function.prototype.call和Function.prototype.apply都是非常常用的方法。它们的作用是一样的
+            区别仅在于传入参数的不同
+            apply接收两个参数一个是 对象一个是参数数组参数列表
+        */
+        var func = function(a,b,c)
+        {
+            alert([a,b,c]); //输出 [1,2,3]
+        }
+        func.apply(null,[1,2,3]);
+        //
+        func.call(null,1,2,3); //那么call要一个一个参数传入
+        /*
+            当调用一个函数时，javascript解释器并不会计较型参和的数量，类型以及顺序上的区别，
+            javascript的参数在内部就是用一个数组来表示的。从这个意义上apply比call效率高
+            当使用apply call的第一个参数为null那么他指向的就是window全局对象在浏览器中为window
+        */
+
+        var func = function(a,b,c){
+            alert(this===window);
+        }
+        //这里返回true因为没有传入相应 的对象那么他就是指向window
+        func.apply(null,[1,2,3]);
+
+
+        var func = function(a,b,c){
+            "use strict"
+            alert(this===null);  //返回true
+        }
+        //但是在严格模式下这里返回的是false因为严格模式下，this不会再指向window而是undfeine
+        func.apply(null,[1,2,3]);
+
+        console.log(Math.max.apply(null,[1,2,3,4]));
+
+
+    </script>
+</body>
+</html>

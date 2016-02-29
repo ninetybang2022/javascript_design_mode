@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>apply call的借用其他对象</title>
+</head>
+<body>
+    <script type="text/javascript">
+        /*
+            借用其他对象方法
+            借用其他方法第一种场景是“借用构造函数”通过这种技术 可以实现一些类似继承的效果
+
+            函数的参数列表arguments是一个类数组对象，他有下标  但是它并非真正的数组，所以也不能像数组一样
+            ，进行排序操作或者往集合中添加新元素。如果要让他实现这些功能
+            那么一般是使用Array.prototype对象上的方法，比如想往arguments中添加一个新元素
+            通常会借用Array.prototype.push方法
+
+        */
+        var A = function(name){
+            this.name = name;
+        }
+        var B = function(name){
+            this.name = name;
+        }
+        B.prototype.getName = function(){
+            return this.name;
+        }
+        var b = new B('sven');
+        // console.log(b.getName()) //sven
+        (function(){
+            Array.prototype.push.call(arguments,3);
+            console.log(arguments);
+        })(1,2);
+        //还可以通过这种方式借用 slice shift等方法
+
+        //push方法的内部实现 ，是一个属性复制的过程，把参数按照下村依次添加到push的对象上，顺便修改了length属性的长度 。到底是对象还是数组这个并不重要
+        var objs = {   }
+        Array.prototype.push.call(objs,'hello');
+        console.log(objs.length);
+        console.log(objs);
+
+        /*
+            这里 不是所有的对象都可以借用push插入元素的
+            必须满足两个条件
+            1、对象本身要可以存取属性
+            2、对象的length属性是可以读写的
+        */
+        
+
+
+
+    </script>
+</body>
+</html>

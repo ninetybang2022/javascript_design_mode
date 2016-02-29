@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>丢失的this</title>
+</head>
+<body>
+    <div id="div1"></div>
+    <script type="text/javascript">
+        var obj = {
+            myName:'sven',
+            getName:function(){
+                return this.myName;
+            }
+        }
+        //当被obj.对象作为方法调用的时候这里的this指向的是obj这个对象所以这里可以返回sven
+        // console.log(obj.getName()); //输出 sven
+        //因为这里作为了一个全局的赋值。这时getName函数中的this指向了全局也就是window所以这里返回了undefine
+        var getName2 = obj.getName;
+        // console.log(getName2());  //这里的this已经指向了全局所以返回了undefine
+
+        //还有一个问题，比如我想把document.getElementById()转为一个小的函数 这样做是没有问题的
+        var getId = function(id){
+            "use strict"
+            return document.getElementById(id);
+        }
+
+        // var duanFun = function()
+        // {
+        //     //传入一个方法名document中的方法名
+        //     var funName = [].shift.apply(arguments);
+        //     if(funName in document)
+        //     {
+        //         return document[funName].bind(document);
+        //     }
+        //     return new Object();
+        // }
+
+
+        //但是这样做就有问题了
+        // var getId = duanFun('getElementById');
+        // console.log(getId('div1'));
+        // var getId = document.getElementById;
+        // getId.call(document,'div1');
+        //如果要实现短函数还可以使用闭包来重新封装
+        document.getElementById = (function(func){
+            return function(){
+                //重新将赋值后的this指向document
+                return func.apply(document,arguments);
+            }
+        })(document.getElementById);
+
+        getId = document.getElementById;
+        getId('div1');
+
+
+
+    </script>
+</body>
+</html>

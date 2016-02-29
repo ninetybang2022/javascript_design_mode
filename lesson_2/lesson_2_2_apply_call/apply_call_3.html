@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>apply_call的用途</title>
+</head>
+<body>
+    <button id="go">go</button>
+    <script type="text/javascript">
+        /*
+
+            1、改变this指向  apply和call可以改变this的指向
+        */
+        var obj1 = {
+            name:'sveb'
+        }
+        var obj2 ={
+            name:'anne'
+        }
+        window.name = 'window';
+        var getname = function(){
+            alert(this.name);
+        }
+        getname(); //这里输出window   //这里默认指向的是全局变量window
+        getname.apply(obj1); //这里输出 sveb //当使用了apply改变了内部this的指向 这里指向了obj1返回sevb
+        getname.apply(obj2); //这里输出 anne 当这里使用了apply改变了内部this的指向  这里指向 obj2返回anne
+        /*
+            比如实现一个点击事件
+        */
+        // document.getElementById('go').onclick = function(){
+        //     alert(this.id);  //返回go
+        //
+        // }
+        //假如该事件函数中有一个内部函数func在事件内部调用func函数时，func函数体内的this就指向 window而不是div
+        // document.getElementById('go').onclick = function(){
+        //     alert(this.id);
+        //     var func = function(){
+        //         alert(this.id); //这里是undefin因为这里的func函数指向的是window
+        //     }
+        //     func();
+        // }
+        // 但是可以使用apply call来将内部的这个函数的this改变为当前div对象
+        document.getElementById('go').onclick = function(){
+            alert(this.id);
+            var func = function(){
+                alert(this.id); //这里是undefin因为这里的func函数指向的是window
+            }
+            func.apply(this); //输出的是go
+        }
+    </script>
+</body>
+</html>

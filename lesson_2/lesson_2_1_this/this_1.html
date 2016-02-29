@@ -6,7 +6,60 @@
 </head>
 <body>
     <script type="text/javascript">
-        
+        /*
+            this总是指向一个对象，而具体指向哪个对象在运行时基于函数的执行环境动态绑定
+            而非函数被声明时的环境
+            this的指向
+                除去不常用的with和eval的情况具体实际应用中，this的指向大致可以分为以下4种
+                1、作为对象的方法调用
+                2、作为普通函数调用
+                3、构造器调用
+                4、Function.prototype.call或Function.prototype.apply调用。
+        */
+        //1、作为对象的方法调用
+        var obj = {
+            a:1,
+            getA:function(){
+                alert(this===obj); // 等于 true
+                alert(this.a);
+            }
+        }
+        // obj.getA();
+
+        //2、作为普通函数调用  当this不被作为函数对象的属性调用时 他总是指向全局对象window
+        window.name = 'globalName';
+        var getName = function(){
+            return this.name;
+        }
+        console.log(getName()) //因为他没有new getName()所以这个函数内部的this指向的是window对象
+
+        //又或者
+        var myObj = {
+            name:'sven',
+            getName:function(){
+                return this.name;
+            }
+        }
+        console.log(myObj.getName()); //这里的this指向的就是myObj这个对象本身所以返回的是sven而不是globalName
+        //但是将myObj.getName赋值给一个全局变量时那么他的this就是指向window
+        var a = myObj.getName;
+        console.log(a()); //这里输出globalName
+
+        /*
+            上面这种情况在use strict中如果在函数内部声明一个函数，那么在那个函数内部的this是指向 undefine的
+        */
+
+        //如
+        function fun()
+        {
+            //要严格模式下面这种情况this不会再被指向window对象而是undefine
+            "use strict"
+            alert(this);
+        }
+        fun();//返回undefine
+
+
+
     </script>
 </body>
 </html>
