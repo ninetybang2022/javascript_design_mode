@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>高阶函数的其他应用 </title>
+</head>
+<body>
+    <script type="text/javascript">
+        /*
+            1、currying  不会立即求值，先保存参数，等到要结果时再一次性把值全部求出来
+
+                函数柯里化 function currying   又称部分求值。
+                一个currying的函数 “首先会接受一些参数” ，接受这些参数之后该函数“并不会立即求值”。
+                "而是继续返回另外一个函数，刚传入的参数在函数形成的闭包中被保存起来"
+                "待到函数被真正需要求值的时候，之前传入的所有参数都会被一次性用于求值"
+        */
+        //currying
+        var monthyCost = 0;
+        var cost = function(money){
+            monthyCost += money;
+        }
+        cost(100);
+        cost(200);
+        // console.log(monthyCost);
+        //上面的例子可以看出来，每天 的数字都会算出来，但是有的时候并不关心这些每天花的数字，而是关心最后的结果
+        //上面的函数可以进行改编成下面的函数
+        var cost = (function(){
+            var args = [];
+            return function(){
+                if(arguments.length == 0)
+                {
+                    var money = 0;
+                    for(var i=0,l=args.length;i<l;i++){
+                        money+=args[i];
+                    }
+                    return money;
+                }else{
+                    [].push.apply(args,arguments);
+                }
+            }
+        })();
+        //上面的函数，如果有传入参数的话那么他会将这些数字保存到args数组中，如果没有传入参数，那么他会遍历args进行加法运算最终得到结果
+        //不会进行计算
+        cost(1,2,3,4);
+        //当没有传入参数的时候才进行计算
+        console.log(cost());
+
+        //这里写一个通用的currying函数，这样写更加松耦合
+        var currying = function(fn)
+        {
+            var args = [];
+            return function(){
+                if(arguments.length === 0 )
+                {
+                    return fn.apply(this,args);
+                }
+                [].push.apply(args,arguments);
+                // return arguments.callee;
+            }
+        }
+        //用于计算总合  解耦
+        var cost = function(){
+                var money =  1;
+                for(var i=0,l=arguments.length;i<l;i++)
+                {
+                    money *= arguments[i];
+                }
+                return money;
+        };
+
+        var costs = currying(cost);
+        costs(100);
+        costs(200);
+        console.log(costs());
+
+        </script>
+</body>
+</html>

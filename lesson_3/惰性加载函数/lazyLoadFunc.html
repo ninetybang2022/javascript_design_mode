@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+    <div id="div1">点我绑定事件</div>
+    <script type="text/javascript">
+    /*
+        惰性加载函数
+
+    */
+    //比如
+    var __addEvent = function(elem,type,handle){
+        if(window.addEventListener)
+        {
+            return elem.addEventListener(type,handle);
+        }else if(window.attachEvent)
+        {
+            return elem.attachEvent(type,handle);
+        }
+    }
+    //这个函数的缺点在于：每个绑定事件的时候他都要进行一次判断，是使用上面addEventListener来绑定事件还是attachEvent来绑定事件
+    //下面的方案中：把嗅探浏览器的操作提前加载的时候进行判断，以便让addevent返回一个包裹正确的逻辑
+
+    //这样在页面一加载进来的时候，就可以返回正确的绑定事件的对象是使用addEventListener还是使用attachEvent而不是每次绑定
+    //的时候都去做判断
+    var _addevent = (function(){
+        if(window.addEventListener)
+        {
+            return function(ele,type,handle){
+                ele.addEventListener(type,handle);
+            }
+        }else if(window.attachEvent)
+        {
+            return function(ele,type,handle){
+                ele.attachEvent(type,handle);
+            }
+        }
+    })();
+
+    // _addevent(document.getElementById('div1'),'click',function(){
+    //     alert('ahello')
+    // })
+    // _addevent(document.getElementById('div1'),'click',function(){
+    //     alert('ahello222')
+    // })
+
+    //但是上面的代码还存在一个缺点：也有可能从头到脚都没有使用过_addevent这个函数，那么他进行预判断就是多于的了
+    //下面是最终解决方案
+    //这个就是惰性加载方案。此时addEvent依然被声明为一个普通函数，在函数里依然有一些分支判断，但是在第一次进入条件
+    //分支之后，在函数内部会重写这个函数重写之后的函数，是期望的addevent函数，
+
+    var addEvent = function(elem,type,handler)
+    {
+
+        //如果存在 那么重写addEvent函数
+        if(window.addEventListener)
+        {
+            //如果存在那么直接重写这个函数
+            addEvent = function(elem,type,handler)
+            {
+                elem.addEventListener(type,handler);
+            }
+        }else if(window.attachEvent)
+        {
+            addEvent = function(elem,type,handler)
+            {
+                elem.attachEvent(type,handler);
+            }
+        }
+        //，再绑定相应的元素事件
+        addEvent(elem,type,handler);
+    }
+    addEvent(document.getElementById('div1'),'click',function(){
+        alert('aaa');
+    })
+    </script>
+</body>
+</html>

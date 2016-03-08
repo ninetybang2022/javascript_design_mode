@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>高阶函数</title>
+</head>
+<body>
+    <script type="text/javascript">
+
+        /*
+            高阶函数
+                函数可以被作为参数传递
+                函数可以作为返回值输出   只要有这两个特性的语言可以实现高阶函数
+
+            函数作为参数传递
+                把函数当作参数传递，这代表可以抽离出一部分容易变化的业务逻辑。
+                把这部分业务逻辑放在函数参数中，这样一来可以分离业务代码中变化与不变化的部分
+                其中一个重要应用场景就是常见的回调函数
+
+            当想在ajax请求返回之后做一些操作，但又并不知道请求返回的确切时间时，最常见的方案就是
+            把callback函数当作为参数传入 。发起ajax请求的方法中，待请求完成之后执行callback函数
+        */
+
+        var getUserInfo = function(userId,callback)
+        {
+            $.ajax('http://api.xx.com/getuser?uid'+userId,function(data){
+                if(typeof callback === 'function')
+                {
+                    callback(data);
+                }
+            })
+        }
+
+        // var appendDivs = function(){
+        //     for(var i=0;i<100;i++)
+        //     {
+        //         var div = document.createElement('div');
+        //         div.innerHTML = i;
+        //         document.body.appendChild(div);
+        //         div.style.display = 'none';  //显然这个放在这里不合适，因为当前的函数只是将生成DIV至于样式什么的不应该他来处理  可以使用回调来处理
+        //     }
+        // }
+
+        //将设置样式提取出来
+        var appendDivs = function(callback){
+            for(var i=0;i<100;i++)
+            {
+                var div = document.createElement('div');
+                div.innerHTML = i;
+                document.body.appendChild(div);
+                if( typeof callback === 'function' )
+                {
+                    //将每次生成的div元素传入回调函数中  隐藏节点是由客户创建好的  因为这里异步并不知道ajax什么时候能返回数据
+                    callback(div);
+                }
+            }
+        }
+        appendDivs(function(node){
+            node.style.display ='block';
+        });
+
+    </script>
+</body>
+</html>

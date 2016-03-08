@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>分段执行函数</title>
+</head>
+<body>
+    <script type="text/javascript">
+        /*
+            分时函数
+                比如：一个创建webQQ好友列表的例子，通常列表中可能会存在成百上千的好友，如果一个好友用一个节点来表示
+                      当我们在页面中渲染这个列表时候，可能要一次性往页面中创建百上千个节点。
+                      这样操作DOM节点可能会让浏览器吃不消。可能就会出现卡死的现象
+
+        */
+        //例子
+        // var ary = [];
+        // for(var i =1;i<=10000;i++)
+        // {
+        //     ary.push(i); //假设这是1000个好友
+        // }
+        // var renderFriendList = function(data)
+        // {
+        //     for(var i=0,l=ary.length;i<l;i++)
+        //     {
+        //         var div = document.createElement('div');
+        //         div.innerHTML = i;
+        //         document.body.appendChild(div);
+        //     }
+        // }
+        // renderFriendList(ary);
+        //解决上面这种问题，可以使用分时函数来操作，每200毫秒来操作一生成一次列表
+        //他有三个参数
+        //第一个参数是创建节点时需要用到的数据，
+        //第二个参数是创建节点要使用的逻辑函数，
+        //第三个参数表示每一批创建节点的数量
+        // var timeChunk = function(ary,fn,count){
+        //     var obj,t;
+        //     var len = ary.length;
+        //     var start = function(){
+        //         for(var i =0;i<Math.min( count || 1,ary.length );i++)
+        //         {
+        //             var obj = ary.shift();
+        //             fn(obj);
+        //         }
+        //     }
+        //     return function(){
+        //         t = setInterval(function(){
+        //             if(ary.length ==0)
+        //                 return clearInterval(t);
+        //             start();
+        //         },200);  //分批执行每200毫秒进一次
+        //     }
+        // }
+
+        //要创建这个分时操作一个是
+        //1、参数1数据
+        //2、逻辑函数fn
+        //3、每次调用生成的数据
+        var timeChunk = function(ary,fn,count){
+            var t;
+            var len = ary.length;
+            var start = function(){
+                for(var i =0,l=Math.min(count || 1,ary.length);i<l;i++)
+                {
+                    var obj = ary.shift();
+                    //将每次循环的数据放入fn函数中进行逻辑处理
+                    fn(obj);
+                }
+            }
+            //返回一个函数
+            return function(){
+                t = setInterval(function(){
+                    //判断上面的那个数据数组，如果全部弹出那么清除这个计时器
+                    if(ary.length ===0)
+                    {
+                        clearInterval(t);
+                    }
+                    start();
+                },200);
+            }
+        }
+
+
+        var ary = [];
+        //生成10000条数据
+        for(var i=0;i<=50;i++)
+        {
+            ary.push(i);
+        }
+        var renderFriendList = timeChunk(ary,function(n){
+            var div = document.createElement('div');
+            div.innerHTML = n;
+            document.body.appendChild(div);
+        },8);
+        //这样做就可以减少一次性加载很多数据的压力分时加载
+        renderFriendList();
+    </script>
+</body>
+</html>

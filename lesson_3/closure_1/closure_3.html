@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>闭包的更多作用</title>
+</head>
+<body>
+    <script type="text/javascript">
+        /*
+            闭包的更多作用
+            1、封装变量
+                闭包可以将不需要暴露的变量封装起来，成为私有变量
+        */
+        var mult = function(){
+            var a = 1;
+            for (var i=0,l=arguments.length;i<l;i++)
+            {
+                a = a * arguments[i];
+            }
+            return a;
+        }
+        // console.log(mult(1,2,32,4));
+        /*
+            mult函数用于计算number类型参数，的乘积。那么如果传入几个上相同的参数，那这种计算可以做缓存不用再次进行计算
+        */
+
+        //这个版本的问题在于：cache为全局变量这样公开了
+        var cache = {};
+        var mult = function()
+        {
+            //当第二次传入相同的参数，会去找cache对象中是否存在相同的键如果存在那么直接返回结果否则再次进行计算
+            var args = Array.prototype.join.call(arguments);
+            var a = 1;
+            //判断传入的值是否计算过一次如果计算过一次那么直接返回他的值否则再次计算
+            if(args in cache)
+            {
+                return cache[args];
+            }
+            //当第一次调用参数进行计算将结果保存到cache对象中
+            for(var i=0,l=arguments.length;i<l;i++)
+            {
+                a = a * arguments[i];
+            }
+            return cache[args] = a;
+        }
+        // console.log(mult(1,2,3,4));
+        // console.log(mult(1,2,3,4));
+
+        //将使用闭包 结果和调用方式和上面一样
+        //这个版本的 问题在于耦合太强，函数的职责过重可以提练为两个函数
+        var multClosure = (function(){
+            var cache = {};
+            return function(){
+                var args = Array.prototype.join.call(arguments);
+                var a = 1;
+                //判断传入的值是否计算过一次如果计算过一次那么直接返回他的值否则再次计算
+                if(args in cache)
+                {
+                    return cache[args];
+                }
+                //当第一次调用参数进行计算将结果保存到cache对象中
+                for(var i=0,l=arguments.length;i<l;i++)
+                {
+                    a = a * arguments[i];
+                }
+                return cache[args] = a;
+            }
+        })()
+        //完美版本
+        var multGood = (function(){
+            var cache = {};
+
+            //专门用于计算
+            var cacle = function(){
+                var a = 1;
+                //当第一次调用参数进行计算将结果保存到cache对象中
+                for(var i=0,l=arguments.length;i<l;i++)
+                {
+                    a = a * arguments[i];
+                }
+                return a;
+            }
+
+            return function(){
+                var args = Array.prototype.join.call(arguments);
+                //判断传入的值是否计算过一次如果计算过一次那么直接返回他的值否则再次计算
+                if(args in cache)
+                {
+                    return cache[args];
+                }
+
+                return cache[args] = cacle.apply(null,arguments)
+
+            }
+        })()
+        console.log(multGood(1,2,3,4));
+        console.log(multGood(1,2,3,4));
+    </script>
+</body>
+</html>

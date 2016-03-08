@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>javascript闭包2</title>
+</head>
+<body>
+    <div>1</div>
+    <div>2</div>
+    <div>3</div>
+    <div>4</div>
+    <div>5</div>
+    <script type="text/javascript">
+        /*
+            因为局部变量有了不被销毁的理由。所以产生了闭包。局部变量就可以被延续
+        */
+        var nodes = document.getElementsByTagName('div');
+        for(var i =0,len=nodes.length;i<len;i++)
+        {
+            //解决这个方法可以使用一个闭将这个事件监听包裹起来
+            // nodes[i].onclick = function(){
+            //     alert(i);  //这里全部出现的是5 原因：因为这里配置的是回调，所以当循环完成的时候i已经是5，再回调时调用的还是5
+            // }
+            //因为使用了闭那么当 自调用函数被调用的时候，传入的i变量就已经被延续了，所以当 回调函数执行时可以找到正确的变量i的值而不是5
+            (function(i){
+                nodes[i].onclick = function(){
+                    alert(i);
+                }
+            })(i)
+        }
+
+        var Type = {};
+        for(var i=0,type;type=['String','Array','Object','Number'][i++];)
+        {
+            // 这里因为和上面的代码一样，当函数再次调用 时候这里的type已经被销毁了。所以使用闭包来实现
+            // Type['is'+type] = function(mixed){
+            //     console.log(type);
+            //     if(typeof mixed == type)
+            //     {
+            //         return true;
+            //     }
+            //     return false;
+            // }
+            //保存了 将变量延续了，他放在了闭包中
+            (function(type){
+                Type['is'+type] = function(mixed){
+                    if(Object.prototype.toString.call(mixed) == '[object '+ type +']')
+                    {
+                        return true;
+                    }
+                    return false;
+                }
+            })(type)
+
+        }
+
+        console.log(Type.isString('aaa')); //输出true
+        console.log(Type.isArray([])); //输出true
+
+
+
+
+    </script>
+</body>
+</html>

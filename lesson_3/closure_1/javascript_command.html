@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>使用javascript来实现命令模式</title>
+</head>
+<body>
+    <button id="open">open</button>
+    <button id="close">close</button>
+
+    <script type="text/javascript">
+        /*
+            在js中函数作为一等对象，本身就可以到处传递，用函数对象而不是普通对象来封装请求显
+            得更加简单自然。如果需要往函数对象中预先植入接收者，那么闭包可以完成这个工作。
+            在面向对象语言版本中的命令模式中，预告植入的命令接收者被当成对象的属性保存起来
+            而在闭包版本的命令模式中，命令接收者会被封装在闭环境中
+        */
+
+        //命令执行者
+        var Tv = {
+            open:function(){
+                console.log('开机');
+            },
+            close:function(){
+                console.log('关机');
+            }
+        }
+
+        //命令传达者  这样只要实现 了 open close的对象都可以植入到命令传达者函数中
+        //这就是不在于对象而在于 实现编程  接口编程
+        var createCommand = function(receiver){
+            var execute = function(){
+                return receiver.open();
+            }
+            var undo = function(){
+                return receiver.close();
+            }
+            return{
+                execute:execute,
+                undo:undo
+            }
+        }
+
+        //命令发起者 将命令传达者预告传入函数中
+        var setCommand = function(command){
+            document.getElementById('open').addEventListener('click',function(){
+                command.execute();
+            });
+            document.getElementById('close').addEventListener('click',function(){
+                command.undo();
+            });
+        }
+
+        setCommand(createCommand(Tv));
+
+
+    </script>
+</body>
+</html>

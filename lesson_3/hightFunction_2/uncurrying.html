@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>uncurrying方法 </title>
+</head>
+<body>
+    <script type="text/javascript">
+        /*
+            uncurrying  在js中，其实不用关心该对象原本是否被设计拥有这个方法，这是动态类型语言的特点
+            也就是鸭子类型思想
+            一个对象也未必只能拥有他自身的方法。
+        */
+        var obj1 = {
+            name:'sven'
+        }
+        var obj2 = {
+            getName:function(){
+                console.log(this.name)
+            }
+        }
+        var obj3 = {length:0};
+        Array.prototype.push.call(obj3,'hello');
+        console.log(obj3);
+        console.log(obj3[0]);
+
+        obj2.getName.call(obj1); //使用call apply可以改变当前对象的this指向所以这里输出的是obj1中的name的值
+
+        //类数组的对象可以去借用Array.prototype中的方法  使用call apply
+        (function(){
+            Array.prototype.push.call(arguments,4); //将4压入到arguments对象中   只要这个对象可以写入并且存在length属性那么他就可以借用Array.prototype中的方法
+            console.log(arguments); //返回的就是1,2,3,4
+        })(1,2,3)
+
+        //下面的方式可以将泛化this的过程提取出来
+        Function.prototype.uncurrying = function()
+        {
+            //这里得到push
+            var self = this;
+            return function(){
+                //第一个传入一个数组
+                var obj = Array.prototype.shift.call(arguments);
+                //再将第二个和第二个参数之后的参数压入obj这个对象中
+                return self.apply(obj,arguments);
+            }
+        }
+        //这样做的好处在于，Push就不只是array数组的方法了，他可以用于操作类似数组的对象了。而且调用直接push就可以了
+        var push = Array.prototype.push.uncurrying();
+        push(obj3,'good','yes');
+        console.log(obj3); //push第一个参数要传入一个类似数组的对象
+
+        //uncurrying将数组的方法添加为静态方法
+        for(var i=0,func;func=['shift','unshift','pop'][i++];)
+        {
+            Array[func] = Array.prototype[func].uncurrying();
+        }
+        //这样就可以静态的调用数组中相应的方法了
+        Array.pop(obj3);
+        console.log(obj3);
+
+
+
+    </script>
+</body>
+</html>

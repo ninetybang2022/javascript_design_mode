@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>高阶函数AOP的实现 </title>
+</head>
+<body>
+    <div id="div">hello</div>
+    <script type="text/javascript">
+        /*
+            AOP面向切面编程  的主要作用是把一些跟 核心业务逻辑模块无关的功能抽离出来。
+            这些跟 业务逻辑无关的功能通常包括日志统计，安全控制，异常处理等。
+            分离后，再通过“动态织入” 的方式掺入业务逻辑模块中，
+            这样的做的好处首先是可以保持业务逻辑 模块的纯净和高内聚性  其次是可以很方便地利用日志统计等功能模块
+
+
+            这也就是javascript的装饰者模式实现的
+        */
+
+        //通常在js中实现AOP 都是指把一个函数”动态织入” 到另一个函数中，具体的实现技术有很多。下面使用Function.prototype实现
+        Function.prototype.before = function(beforefn)
+        {
+            var __self = this;         //保留原函数  也注是下面的 var a = function()这个函数
+            //但是这里是返回了之后才执行的，就下面  var a = function....   再次a()才会执行之前设定好的动态织入
+            return function(){         //返回包含了原函数和新函数的 代理 函数  会被执行
+                //先执行传入的beforefn函数
+                beforefn.apply(this,arguments);        //执行新函数  修正this
+                //再执行 var a = function(){} 声明的那个函数
+                return __self.apply(this,arguments);    //执行原函数
+            }
+        }
+
+        Function.prototype.after = function(afterfn){
+            //保留原函数 下面的a函数
+            var __self = this;
+            return function(){  //返回包含了原函数和新函数的 代理 函数会被执行
+                var ret = __self.apply(this,arguments);    //先调用当前的函数，，因为是after等 上面的所有都执行完成后，
+                afterfn.apply(this,arguments);            //再执行这个
+                return ret;                                //最后再返回ret原来函数的引用
+            }
+        }
+
+
+
+        var a = function(){
+            console.log('aaa');
+        }.after(function(){
+            console.log('之前执行')
+        }).before(function(){
+            console.log('111');
+        }).after(function(){
+            console.log('last');
+        })
+        //这里调用的是before返回的那个return function()
+        a();
+
+                // // $('#hello').prev().show();
+                //
+                // var lwb = (function(){
+                //
+                //     var lwb = function(doc){
+                //         this.ele = document.querySelector(doc);
+                //     }
+                //     return lwb;
+                //
+                // })();
+                //
+                // lwb.prototype.hide = function(){
+                //     this.ele.style.display = 'none';
+                //     return this;
+                // }
+                //
+                // lwb.prototype.show = function(){
+                //     this.ele.style.display = 'block';
+                //     return this;
+                // }
+                //
+                // lwb.prototype.html = function(html){
+                //     this.ele.innerHTML = html;
+                //     return this;
+                // }
+                //
+                // var $ = function(doc){
+                //     return new lwb(doc);
+                // }
+                //
+                // $('#div').hide().html('goodjobs').show();
+
+                // $('aa').func();
+
+    </script>
+</body>
+</html>

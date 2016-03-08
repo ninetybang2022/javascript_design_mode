@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>高阶函数——2</title>
+</head>
+<body>
+    <script type="text/javascript">
+        /*
+            函数作为返回值输出
+                相比把函数当作参数传递，函数当作返回值输出的应用场景也话更多，也更能体现函数式编程的巧妙
+                让函数继续返回一个可执行的函数，意味着去处过程是可延续的
+            1、判断数据的类型：
+                判断一个数据是否为数组，在以往的实现中，可以基于鸭子类型，的概念来判断，判断这个对象是否有sort slice length等一些属性方法
+                但是更好的方式是使用Object.prototype.toString方法 来将这个对象原型输出成字符串 [object string] [object array] 会输出这样的内容
+                可以发现，只有 string array 这些会变化 前面都一样
+                所以可以写一个类型判断来处理
+        */
+        var Type = {};
+        for(var i=0,cType;cType=['String','Array','Number','Object'][i++];)
+        {
+            (function(cType){
+                Type['is'+cType] = function(obj){
+                    if(Object.prototype.toString.call(obj) === '[object '+cType+']'){
+                        return true;
+                    }
+                    return false;
+                }
+            })(cType)
+
+        }
+        console.log(Type.isString('aa'));
+
+    </script>
+</body>
+</html>

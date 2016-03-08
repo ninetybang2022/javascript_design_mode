@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>面向对象的方式，来实现命令模式</title>
+</head>
+<body>
+    <button id="execute">点击我执行命令</button>
+    <button id="undo">点击我执行命令</button>
+    <script type="text/javascript">
+        /*
+            命令模式 的意图是把请求封装对象，从而分享请求的发起者和请求接收者执行者
+            之间的耦合性，在命令被执行之前，可以预告往命令对象中植入命令的接收者
+                                    只执行与数据库之间通信不管SQL语句正确与否则       执行封装SQL语句成函数            调用SQL语句封装成为的函数
+            //比如面向对象语言中比如  DAO数据库访问层                                 <--MODEL模型父类             <--MODEL调用者
+
+
+        */
+        //命令对象
+        var Tv = {
+            open:function(){
+                console.log('打开电视');
+            },
+            close:function(){
+                console.log('关闭电视');
+            }
+        }
+
+        //请求接收者
+        var OpenTvCommand = function(receiver){
+            this.receiver = receiver;
+        }
+        OpenTvCommand.prototype.execute = function(){
+            this.receiver.open(); //执行命令，打开 电视
+        }
+        OpenTvCommand.prototype.undo = function(){
+            this.receiver.close(); //关闭电视
+        }
+
+        //请求发起者
+        var setCommand = function(command)
+        {
+            document.getElementById('execute').onclick = function(){
+                command.execute(); //打开电视
+            }
+            document.getElementById('undo').onclick = function()
+            {
+                command.undo(); //关闭电视
+            }
+        }
+
+        setCommand(new OpenTvCommand(Tv));
+
+    </script>
+</body>
+</html>
