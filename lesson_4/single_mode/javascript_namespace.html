@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>使用命名空间javascript中</title>
+</head>
+<body>
+    <script type="text/javascript">
+        /*
+            之前的那几种写法都是相对于存在面向对象语法的语言中
+            对于js这种没有类的语言来说ES6之前
+            “单例模式的核心是确保只有一个实例，并提供全局访问”
+
+        */
+        //减少命名污染
+        //1、使用命名空间
+        var namespace1 = {
+            a:function(){
+                alert(1);
+            },
+            b:function(){
+                alert(2);
+            }
+        }
+        /*
+            把a和b都定义为namespace1的属性，这样可以减少变量和全局作用域打交道的机会。
+            另外还可以动态地创建命名空间。
+        */
+        // var MyApp = {};
+        // MyApp.namespace = function(name)
+        // {
+        //     //传入的可能是一个 myname.hello  也就是创建myname这个名字空间下再创建一个为hello的对象
+        //     var parts = name.split('.');
+        //     //将MyApp赋值给current
+        //     var current = MyApp;
+        //     //
+        //     for(var i in parts)
+        //     {
+        //         //如果传入的内容不在current对象中那么将他设置为一个空对象{}
+        //         if(!current[parts[i]]){
+        //             current[parts[i]] = {};
+        //         }
+        //         //如果存在的话那么将他下面的 dom.style 类似这样.后面的style添加进current[dom][style]中
+        //         current = current[parts[i]];
+        //     }
+        // };
+
+        var MyApp = {}; //这是一个保存名字空间的对象
+        MyApp.namespace = function(name)
+        {
+            //可能会传入一个name.xxx这样创建一个名字空间
+            var parts = name.split('.');
+            var current = MyApp;
+            //将他分割为一个数组
+            for(var i in parts)
+            {
+                //再判断是否存在于MyApp这个对象中
+                if(!current[parts[i]])
+                {
+                    //如果不存在那么将他定义为一个空对象
+                    current[parts[i]] = {};
+                }
+                //如果存在那么将他重新赋值给MyApp
+                current = current[parts[i]];
+            }
+        }
+
+        MyApp.namespace('dom');
+        MyApp.namespace('dom.style');
+        MyApp.namespace('dom.style.goodjobs.hellow');
+        console.dir(MyApp);
+
+
+        //上面的代码相当于
+        /*
+            var MyApp = {
+                event:{},
+                dom:{
+                    style:{}
+                }
+            }
+        */
+
+
+
+        //或者使用闭包来封装私有变量   这样做可以避免变量被全局变量污染
+        var user = (function(){
+
+            var __name = 'sven',
+                 __age = 20;
+
+            return {
+                getUserInfo:function(){
+                    return __name + ' ' + __age;
+                }
+            }
+
+
+        })();
+    </script>
+</body>
+</html>

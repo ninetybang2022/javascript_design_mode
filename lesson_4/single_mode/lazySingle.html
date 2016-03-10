@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>惰性单例</title>
+</head>
+<body>
+    <button id="loginBtn">登录</button>
+    <div id="div1">这是一个点击事件</div>
+    <script type="text/javascript">
+        /*
+            惰性单例，指的是需要的时候才创建对象的实例。他在现实技术中非常实用
+            例子：下面的代码，instance实例对象总是在调用Singleton.getInstance的时候才被返回。
+            而不是在页面加载完成后就创建
+        */
+        // var Singleton = {};
+        // //这种是基于类的单模式，在javascript并不合适
+        // Singleton.getInstance = (function(){
+        //     var instance = null;
+        //     return function(name){
+        //         if(!instance){
+        //             instance = new Singleton(name);
+        //         }
+        //         return instance;
+        //     }
+        // })();
+        //但是这里存在一个问题，有的时候可能用户可能都不会去点击这个登录按钮
+        //那么在这里就已经创建了这个对象，就浪费了
+        // var loginLaryer = (function(){
+        //     var div = document.createElement('div');
+        //     div.innerHTML = '我是登录窗口';
+        //     div.style.display = 'none';
+        //     document.body.appendChild(div);
+        //     return div;
+        // })();
+        //
+        // document.getElementById('loginBtn').onclick = function(){
+        //     loginLaryer.style.display = 'block';
+        // }
+        //升级版。将上面的loginlaray封装为一个函数而不是自执行的函数
+        // var loginLaryer = function(){
+        //     var div = document.createElement('div');
+        //     div.innerHTML = '我是登录窗口';
+        //     div.style.display = 'none';
+        //     document.body.appendChild(div);
+        //     return div;
+        // };
+        //在按下登录按钮的时候才去创建这个对象  但是这就失去了单例的效果。每 次点击登录都会创建一个对象
+        // 解决：可以在浮动窗口上添加一个删除他的按钮，。但是这样频繁创建和删除节点明显是不合理的，也是不必要的
+        /*
+            document.getElementById('loginBtn').onclick = function(){
+                 var loginBox = loginLaryer();
+             loginBox.style.display = 'block';
+        }*/
+
+        //还有一种做法是判断那个浮动窗口对象是否已经存在如果存在那么就将他设置为block否则就创建他
+        /*var createLoginLayer = (function(){
+            var div;
+            return function()
+            {
+                if(!div)
+                {
+                    div = document.createElement('div');
+                    div.innerHTML = '我是登录窗口';
+                    div.style.display = 'none';
+                    document.body.appendChild(div);
+                }
+                return div;
+            }
+        })();
+        document.getElementById('loginBtn').onclick = function(){
+            var loginLaryer = createLoginLayer();
+            loginLaryer.style.display = 'block';
+        }
+        */
+        //最终解决方案通用的惰性
+        /*
+            上面的代码还是存在一个问题：
+                1、上面的代码违反单一职责原则。创建对象和管理单例的逻辑放在了createLoginLayer对象内部
+                2、如果下次创建页面中唯一的iframe或者script标签，用来跨域请求数据，就必须得如法炮制一个 一样的函数了
+
+                ** 需要把不变的部分隔离出来，先不考虑创建一个div和一个iframe有多少差异，管理单例的逻辑其实是完全可以抽象出来的
+                   这个逻辑始终是一样的。用一个变量来标志是否创建过对象，如果是则在下次直接返回已经创建好的对象:
+                       var obj;
+                       if(!obj)
+                           obj = xxx;
+        */
+        //通用的创建单例对象的方法
+        /*
+            下面将用于创建浮窗口的方法参数fn的形式传入getSingle函数中，不仅可以传入createLoginLayer
+            还能传入createScript、createIframe createXhr等。
+            之 后他会返回一个新的函数，并且用一个变量result保存fn计算结果。result变量因为身在闭包中，它不会被销毁
+            在将来请求中，如果result已经被赋值，那么将返回这个值
+        */
+        var getSingle = function(fn)
+        {
+            var result;
+            return function()
+            {
+                return result || (result = fn.apply(this,arguments));
+            }
+        }
+
+        var createInput = function(name,value)
+        {
+            var input = document.createElement('input');
+            input.name = name;
+            input.value = value;
+            return input;
+        }
+
+        var careateCloseBtn = function()
+        {
+            var btn = document.createElement('button');
+            btn.innerHTML = '关闭';
+            btn.id = 'loginLaryer_closebtn'
+            return btn;
+        }
+
+        var addHandle = function()
+        {
+            var inputs = this.querySelectorAll('input');
+            this.querySelector('#loginLaryer_closebtn').onclick = function()
+            {
+                var loginbox = createSingleLoginLayer();
+                console.log(inputs);
+                inputs[0].value = '';
+                inputs[1].value = '';
+                loginbox.style.display = 'none';
+            }
+
+        }
+
+        var createLoginLayer = function()
+        {
+            var div = document.createElement('div');
+            div.innerHTML = '我是登录窗口';
+            div.style.display = 'none';
+            var closeBtn = careateCloseBtn();
+            div.appendChild(closeBtn);
+            div.appendChild(passInput);
+            div.appendChild(userInput);
+            document.body.appendChild(div);
+            //绑定所有事件
+            addHandle.apply(div);
+            return div;
+        }
+
+        var createSingleLoginLayer = getSingle(createLoginLayer);
+
+        document.querySelector('#loginBtn').onclick = function()
+        {
+            var loginbox = createSingleLoginLayer();
+            loginbox.style.display = 'block';
+        }
+
+        /*
+            上面的实例中，把创建实例对象的职责和管理单例职责分别旋转在两个方法中，这两个方法
+            可以独立变化而互不影响，当它们连接在一起的时候，就完成了创建唯一实例的功能。
+            绑定事件也可以这么做
+        */
+        //这样也可以给事件做单例模式。这样不管下面渲染多少 次元素，他的事件只有一次
+        var bindEvent = getSingle(function(){
+            document.getElementById('div1').addEventListener('click',function()
+            {
+                alert('click');
+            });
+            return true;
+        });;
+        var render = function()
+        {
+            console.log('开始渲染列表');
+            bindEvent();
+        }
+        render();
+        render();
+        render();
+
+    </script>
+</body>
+</html>

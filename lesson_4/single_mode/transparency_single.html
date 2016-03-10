@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>创建透明的单例模式</title>
+</head>
+<body>
+    <script type="text/javascript">
+        /*
+            创建一个透明的单例模式，用户从这个类中创建对象时候。可以像用其他任何普通类一样。
+            如下面的的createDiv单例类，他作用是负责在页面中创建唯一的div节点
+        */
+        var CreateDiv = (function(){
+            var instance;
+
+            /*
+                当第一次创建完div之后那么将本对象的实例保存到instance变量中
+                再将他返回。第二次调用的时候直接返回这个对象的实例
+
+                这个方法的缺点：为了把instance封装起来，使用了自执行匿名函数和闭包，并且让这个匿名函数返回真正的
+                singleton构造方法 ，这增加了一些程序的复杂度。阅读起来也不好
+
+                在下面的代码中：createDiv的构造函数实际上负责了两件事情，
+                1、创建对象和执行初始化ini方法。
+                2、保证只有一个对象  这里就破坏了 单一职责原则 的概念
+
+                这种作法缺点：如果后期要让这个函数可以创建N多个DIV那么就要去除下面这一段内容。也就是说
+                要改写createDiv这个方法。要把控制唯一对象的那一段去掉这样  修改就不太好
+            */
+            var CreateDiv = function(html){
+                if(instance)
+                {
+                    return instance;
+                }
+                this.html = html;
+                this.init();
+                return instance = this;
+            }
+            CreateDiv.prototype.init = function(){
+                var div = document.createElement('div');
+                div.innerHTML = this.html;
+                document.body.appendChild(div);
+            }
+            return CreateDiv;
+        })();
+        var a = new CreateDiv('sven1'); //只会创建一个sven1这个div不会再创建sven2这个div
+        var b = new CreateDiv('sven2');
+
+    </script>
+</body>
+</html>

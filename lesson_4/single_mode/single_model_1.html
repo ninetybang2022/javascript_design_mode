@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>单例模式的使用</title>
+</head>
+<body>
+<script type="text/javascript">
+    /*
+        单例模式：保证一个类仅有一个实例，并提供一个访问它的全局访问点
+        单例模式是最常使用的一种设计模式，有些对象往往只需要一个。
+        如：单击登录按钮的时候，页面中会出现一个登录窗口，而这个登录窗口是唯一的，无论单击多少次登录按钮。
+        这个浮动窗口都只会创建一次。这就是使用单例模式来创建的
+    */
+    //实现单例模式
+    var Single = function(name){
+        this.name = name;
+        this.instance = null;
+    }
+    Single.prototype.getName = function(){
+        alert(this.name);
+    }
+    Single.prototype.setName = function(name)
+    {
+        this.name = name;
+    }
+    //判断如果存在这个对象的实例那么就直接返回他
+    Single.getInstance = function(name){
+        if(!this.instance)
+        {
+            this.instance = new Single(name);
+        }
+        this.instance.setName(name);
+        return this.instance;
+    };
+    //但是有一个问题，就是增加了这个类的不透明性。
+    var a = Single.getInstance('lwb');
+    var b = Single.getInstance('lwl');
+    console.log(a===b); //返回的是true因为第二次调用之后没有重新创建实例而是返回了第一次创建之后的实例
+
+
+
+
+</script>
+</body>
+</html>

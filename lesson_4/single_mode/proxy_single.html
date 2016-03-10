@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>代理模式实现单例 </title>
+</head>
+<body>
+    <script type="text/javascript">
+        /*
+            代理模式实现单例
+            可以使用代理模式来解决上面的提到的问题
+            1、首先在createDiv构造函数中，把负责管理单例的代码移除  全它成为一个普通的创建div的类
+        */
+
+        //这里的createDiv那么现在就只负责创建一个div其他事都不做  至于是否为创建单一的实例 那么是下面的代理单例做的事
+        //这样就做到了单一职责
+        var CreateDiv = function(html)
+        {
+            this.html = html;
+            //初始化
+            this.init();
+        }
+        CreateDiv.prototype.init = function()
+        {
+            var div = document.createElement('div');
+            div.innerHTML = this.html;
+            document.body.appendChild(div);
+        }
+
+
+        //引入代理模式来创建
+        /*
+            通过引入代理类的方式。同样可以完成一个单例的编写。
+            现在我们把负责管理单例的逻辑移到代理类中ProxySingleCreateDiv中。这样一来
+            CreateDiv就变成了一个普通的类。它跟ProxySingleCreateDiv组合起来可以达到单例效果
+            而且耦合低
+        */
+        var ProxySingleCreateDiv = (function(){
+
+            var instance;
+            return function(html)
+            {
+                if(!instance)
+                {
+                    instance = new CreateDiv(html);
+                }
+                return instance;
+            }
+
+        })();
+
+        var a = ProxySingleCreateDiv('hello world');
+        var b = ProxySingleCreateDiv('Good Jobs');
+
+        console.log(a===b);
+
+
+    </script>
+</body>
+</html>
