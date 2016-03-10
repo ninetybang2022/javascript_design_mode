@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>策略模式在javascript中的实现--动画缓动算法的实现</title>
+</head>
+<body>
+    <style media="screen">
+        *{padding:0px;margin:0px;}
+    </style>
+    <div id="div" style="position:absolute;background:blue" >我是div</div>
+    <script type="text/javascript">
+        /*
+            策略模式在javascript中的实现
+            strategy对象从各个策略中创建而来，这是模拟一些传统面向对象语言的实现 。
+
+        */
+        //定义一个策略对象。
+        var strategies = {
+            'S':function(salary){
+                return salary * 4;
+            },
+            'A':function(salary){
+                return salary * 3;
+            },
+            'B':function(salary){
+                return salary * 2;
+            }
+        }
+        //之前这里是，一系列的if语句进行判断。而使用了策略模式消除了很多if语句
+        //calculateBonus并没有计算能力。而是把这个职责委托给个某个策略对象。每个策略对象负责的算法
+        //已被各自封装在对象内部。当请求计算时不同的等级会返回不同的结果 而这正是对象的多态性
+        var calculateBonus = function(level,salray)
+        {
+            return strategies[level](salray);
+        }
+
+        console.log(calculateBonus('S',10000));
+
+        //一些闪动算法
+        //每个算法都有四个参数：消耗时间、小球原始位置、小球目标位置、动画持续时间
+        //返回的值则是动画元素应该处在当前的位置
+        var tween = {
+            linear: function(t,b,c,d)
+            {
+                return c*t/d+b;
+            },
+            easeIn:function(t,b,c,d)
+            {
+                return c*(t/=d)*t+b;
+            },
+            strongEaseIn:function(t,b,c,d)
+            {
+                return c*(t/=d)*t*t*t*t+b;
+            },
+            strongEaseOut:function(t,b,c,d){
+                return c * ((t=t/d-1) * t*t*t*t+1)+b;
+            },
+            sineaseIn:function(t,b,c,d){
+                return c*(t/=d) * t * t +b;
+            },
+            sineaseOut:function(t,b,c,d){
+                return c*((t=t/d-1)*t*t+1)+b;
+            }
+        };
+
+        var Animate = function(dom){
+            this.dom = dom; //进行运动的dom节点
+            this.startTime = 0;     //动画开始时间
+            this.startPos = 0;      //动画开始时、dom节点的位置、即dom的初始位置
+            this.endPos   = 0;       //动画结束时，dom节点的位置、即dom的目标位置
+            this.propertyName = null; //dom节点需要被行改变的css属性名
+            this.easing = null;     //缓动算法
+            this.duration=null;     //动画持续时间
+        }
+        //下面是start方法负责启动这个动画。在动画被启动的瞬间，要记录一些信息，供缓动算法在以后计算小球当前位置的时候使用。
+        //在记录完成这些信息后，上此方法 还要负责启动定时器
+        Animate.prototype.start = function(propertyName,endPos,duration,easing){
+            this.startTime = +new Date; //动画启动时间
+            this.startPos  = this.dom.getBoundingClientRect()[propertyName]; //dom节点初始位置
+            this.propertyName=propertyName; //dom节点需要被改变的CSS属性名
+            this.endPos      = endPos;        //dom节点目标位置
+            this.duration    = duration;        //动画持续时间
+            this.easing = tween[easing]; //缓动算法
+
+            var self = this;
+            var timeId = setInterval(function(){
+                if(self.step() === false){ //如果动画结束，则清除定时器
+                    clearInterval(timeId);
+                }
+            },19);
+        }
+        ///上面的函数接受4个参数
+        //propertyName 要改变CSS的属性名 left top right bottom
+        //endPos 小球运动的目标位置
+        //duration 动画持续时间
+        //easing 缓动算法
+        //这个step函数：该方法代表小球 运动的每一帧要做的事情。
+        Animate.prototype.step = function(){
+            var t = +new Date; //取得当前时间
+            //这里说明，当当前时间大于或等于 开始时间和持续时间之合时，表示动画已经结束
+            if(t>=this.startTime + this.duration){
+                this.update(this.endPos); //更新小球 的CSS属性
+                return false;
+            }
+            var pos = this.easing(t-this.startTime,this.startPos,this.endPos-this.startPos,this.duration);
+            this.update(pos);
+        }
+
+        //更新属性
+        Animate.prototype.update = function(pos){
+            this.dom.style[this.propertyName] = pos + 'px';
+        }
+
+        var div = document.getElementById('div');
+        var animate = new Animate(div);
+        animate.start('left',500,1000,'sineaseOut');
+    </script>
+</body>
+</html>

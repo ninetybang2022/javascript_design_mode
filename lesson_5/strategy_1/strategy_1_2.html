@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>使用策略模式重构计算终年奖</title>
+</head>
+<body>
+    <script type="text/javascript">
+        /*
+            3、使用策略模式重构代码
+                因为策略模式的定义就是一系列算法，把它们一个个封装起来，将不变的部分和变化的部分隔开是每个设计模式的主题。策略也不例外
+                “策略模式的目的就是将算法的使用与算法的实现分开”
+
+                上之前的例子中：根据某个算法取得计算后的奖金的数额。而算法的实现是各异变化的。
+                每种绩效对应着不同的计算规则
+
+                一个基于策略模式的程序至少由两部分组成。
+                    1、一组策略类。策略类封装了具体的算法。并负责具体的计算过程。
+                    2、环境类Context Context接受客户的请求，随后把请求委托给某个策略类。 说明Context中要维持对某个策略对象的引用。
+
+
+            传统策略模式的实现：面向对象语言中的策略模式的实现
+        */
+        var performanceS = function(){}
+        performanceS.prototype.calculate = function(salary)
+        {
+            return salary * 4;
+        }
+
+        var performanceA = function(){}
+        performanceA.prototype.calculate = function(salary)
+        {
+            return salary * 3;
+        }
+        var performanceB = function(){}
+        performanceB.prototype.calculate = function(salary)
+        {
+            return salary * 2;
+        }
+
+        //接下来是定义奖金类
+        var Bonus = function(){
+            this.salary = null; //原始工资
+            this.strategy = null; //绩效等级对应的策略对象
+        }
+        Bonus.prototype.setSalary = function(salary)
+        {
+            this.salary = salary;
+        }
+        //保存算法对象
+        Bonus.prototype.setStrategy = function(strategy){
+            this.strategy = strategy;
+        }
+
+        Bonus.prototype.getBonus = function(){  //获得年终奖
+            //这里调用this.strategy.calculate()这样因为他们都实现了calculate方法 当使用setStrategy方法设置一个策略对象的时候
+            //都可以调用他们实现的方法 calculate 因为这就是鸭子类型只关注实现不关注对象
+            return this.strategy.calculate(this.salary);  //把计算的奖金的操作委托给对应的策略对象
+        }
+
+        //策略模式的思想：定义一系列算法，把它们一个个封装起来，并且使它们可以相互替换
+        //（这是存在于静态类型语言。因为静态类型语言中有类型检查机制，所以各个策略类需要实现同样的接口
+        //当它们的真正类型被隐藏在接口后面时，它们才能被相互替换。而js类型模型。的语言没有这种困扰，任何对象都可以被替换使用，
+        //“因此javascript中的可以相互替换使用。表现为它们具有相同的目标和意图”）
+
+        var bonus = new Bonus();
+        bonus.setSalary(10000);
+        bonus.setStrategy(new performanceS()); //设置策略对象
+        console.log(bonus.getBonus()); //输出40000
+        bonus.setStrategy(new performanceA()); //设置策略对象
+        console.log(bonus.getBonus()); //输出30000
+
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>策略模式</title>
+</head>
+<body>
+    <script type="text/javascript">
+        /*
+            策略模式的定义是：定义一系列的算法。把他们一个个封装起来，并且使它们可以相互替换。
+            用策略模式来计算年终奖金。
+            1、最初始实现
+                编写一个calculateBonus的函数来计算每个人的资金数额，很显然calculateBonus函数要正确工作
+                就需要接收两个参数  员工的工资数额和他的绩效考核等级
+        */
+        var calculateBonus = function(performanceLevel,salary)
+        {
+            if(performanceLevel === 'S')
+            {
+                return salary * 4;
+            }
+            if(performanceLevel === 'A')
+            {
+                return salary * 3;
+            }
+            if(performanceLevel === 'B')
+            {
+                return salary * 2;
+            }
+        }
+
+        console.log(calculateBonus('B',20000)); //输出40000
+        console.log(calculateBonus('S',6000)); //输出24000
+
+        /*
+            这个函数存在两个问题：
+            1、calculateBonus函数比较庞大，包含了很多if else语句，这些语句需要覆盖所有的逻辑分支
+            2、calculateBonus函数缺乏弹性，如果增加一种新的绩效等级C，或者想把绩效S的资金系数改为5，那必须深入calculateBonus函数的内部实现，
+               这是违反开放-封闭原则的。
+            3、算法的复用性差，如果程序的其他地方需要重用这些计算奖金的算法，只能复制粘贴
+
+            //使用组合函数重构代码
+                一般最容易想到的就是组合函数来重构代码，把各种算法封装为一个个小函数里面，这些小函数命名良好。可以一目发然明白他是干什么的。
+        */
+        //这种方式他将算法独立出来，算计算年终奖的算法更有利用性
+        //但是还是缺乏弹性。因为有可能后期calculateBonus中的if条件会越来越多
+        var performanceS = function(salary){
+            return salary * 4;
+        }
+        var performanceA = function(salary){
+            return salary * 3;
+        }
+        var performanceB = function(salary){
+            return salary * 2;
+        }
+
+        var calculateBonus = function(performanceLevel,salary)
+        {
+            if(performanceLevel === 'S'){
+                return performanceS(salary);
+            }
+            if(performanceLevel === 'A'){
+                return performanceA(salary);
+            }
+            if(performanceLevel === 'B'){
+                return performanceB(salary);
+            }
+        }
+        console.log(calculateBonus('A',10000)); //输出30000
+    </script>
+</body>
+</html>

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>策略模式：之表单验证算法</title>
+</head>
+<body>
+    <form action="javascript:;" id="registerForm" method="post">
+        请输入用户名:<input type="Text" name="userName" />
+        请输入密码:<input type="password" name="password" />
+        请输入手机号码:<input type="text" name="phoneNumber" />
+        <button>提交</button>
+    </form>
+    <script type="text/javascript">
+        /*
+            表单验证：
+            //第一个版本
+        */
+        // var registerForm = document.getElementById('registerForm');
+        // registerForm.onsubmit = function()
+        // {
+        //     if(registerForm.userName.value == '')
+        //     {
+        //         alert('用户名不能为空');
+        //         return false;
+        //     }
+        //     if(registerForm.password.value.length < 6)
+        //     {
+        //         alert('密码长度不能少于6个字符');
+        //         return false;
+        //     }
+        //     if(!/(^1[3|5|8][0-9]{9}$)/.test(registerForm.phoneNumber.value))
+        //     {
+        //         alert('输入的不是一个手机号');
+        //         return false;
+        //     }
+        // }
+        /*
+            上面的代码问题在于：
+            1、registerForm.onsubmit函数比较庞大，它的缺点跟计算奖金最初版本是一样的很多if -else这些语句需要覆盖所有校验规则
+            2、registerForm.onsubmit函数缺乏弹性，如果增加了一种新的校验规则，或者想把密码的长度校验从6改为8，那就必须深入
+               registerForm.onsubmit函数的内部实现，这是违反开放封闭原则
+            3、算法的复用性差，如果在程序中增加了另外一个表单，这个表单也需要进行一些类似的校验，那又要复制了。。
+        */
+
+        /*
+            使用策略模式重构表单校验
+        */
+        //strategies用来保存校验规则
+        var strategies = {
+            isNonEmpty:function(value,errMsg){
+                if(value === '')
+                {
+                    return errMsg;
+                }
+            },
+            minLength:function(value,length,errorMsg){ //限制最小长度
+                if(value.length<length){
+                    return errorMsg;
+                }
+            },
+            isMobile:function(value,errorMsg){ //手机号格式
+                if(!/(^1[3|5|8][0-9]{9}$)/.test(value)){
+                    return errorMsg;
+                }
+            }
+        }
+
+        /*
+            然后通过validator.add方法，往validator对象中添加一些检验规则。
+            validator.add方法接受3个参数，
+            validator.add(表单值，'规则','错误信息')
+            是一个以冒号的字符串，冒号前面minLength代表使用strategies对象中的minLength方法来进行校验6表示为长度
+            第三个参数为，当校验未通过时提示的错误
+
+            使用validator.start()方法来启动校验。他会返回一个errorMsg字符中当作返回值。说明校验没有通过
+        */
+
+
+
+
+        var Validator = function()
+        {
+            this.cache = []; //保存校验规则
+        }
+        //目前的add方法只能给一个表单添加一个校验规则;
+        //但是一个校验规则显然是不够的，要添加多个校验规则。那么就要重构add方法
+        /*
+            要实现 一个表单可以使用多个校验规则那么可以rule为一个对象
+            rule传值：
+            [{
+                strategy:'校验规则1'
+                errorMsg:'错误信息1'
+            },{
+                strategy:'校验规则2'
+                errorMsg:'错误信息2'
+            },
+            ]
+        */
+        Validator.prototype.add = function(dom,rules){
+            //重构add方法让他支持多个校验规则
+            var self = this;
+            //只是多了一层循环。因为传入的是一个数组  这样一个表单就可以做多个校验。
+            //使用一个数组将校验规则包起来
+            for(var i =0,rule;rule=rules[i++];){
+                (function(){
+                    //这一步现在是将rule这个对象中的strategy分割为一个数组
+                    var strategyAry = rule.strategy.split(':');
+                    //
+                    var errMsg = rule.errorMsg;
+                    self.cache.push(function(){
+                        //校验规则
+                        var strategy = strategyAry.shift();
+                        strategyAry.unshift(dom.value);
+                        strategyAry.push(errMsg);
+                        return strategies[strategy].apply(dom,strategyAry);
+                    })
+                })(rule);
+            }
+
+
+            //只支持单一校验规则
+            // var rulesArr = rule.split(':');  //将可能存在的:规则名和值分割为一个数组
+            // this.cache.push(function(){     //将校验函数压入cache数组中
+            //     //弹出第一个值，也就是规则名
+            //     var ruleName = rulesArr.shift();        //将校验的规则名弹出
+            //     rulesArr.unshift(dom.value);            //将相应节点的value压入rulesArr中
+            //     rulesArr.push(msg);                    //压入错误信息
+            //     return strategies[ruleName].apply(dom,rulesArr);   //去执行校验的函数并返回
+            // })
+        }
+
+        Validator.prototype.start = function()
+        {
+            console.log(this.cache);
+            for(var i =0,vfun;vfun=this.cache[i++];)
+            {
+                var errMsg = vfun();   //开始校验，并取得校验后的返回信息
+                if(errMsg)   //如果有确切的返回那么存在错误。
+                {
+                    return errMsg;
+                }
+            }
+        }
+
+        //下面validator类，validator类在这里作为Context,负责接收用户的请求并委托给strategies对象。
+        var validataFunc = function(){
+            var validator = new Validator(); //创建一个validator对象
+            validator.add(registerForm.userName,
+                [
+                    {'strategy':'isNonEmpty','errorMsg':'用户名不能为空'},
+                    {'strategy':'minLength:6','errorMsg':'用户名不能少于6个字符'}
+                ]
+            );
+            validator.add(registerForm.password,
+                [
+                    {'strategy':'isNonEmpty','errorMsg':'密码不能为空'},
+                    {'strategy':'minLength:6','errorMsg':'密码不能少于6个字符'}
+                ]
+            );
+            validator.add(registerForm.phoneNumber,
+                [
+                    {'strategy':'isNonEmpty','errorMsg':'手机号不能为空'},
+                    {'strategy':'isMobile','errorMsg':'不是一个手机号'}
+                ]
+            );
+
+            var errMsg = validator.start(); //开始校验
+            return errMsg;
+        }
+
+        var registerForm = document.getElementById('registerForm');
+        //这样一个表单就可以做多个校验
+        registerForm.onsubmit = function(){
+            var errorMsg = validataFunc();
+            if(errorMsg){
+                alert(errorMsg);
+                return false;
+            }
+        }
+
+
+    </script>
+</body>
+</html>
