@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>虚拟代理合并HTTP请求</title>
+</head>
+<body>
+    <input type="checkbox" id="1">1
+    <input type="checkbox" id="2">2
+    <input type="checkbox" id="3">3
+    <input type="checkbox" id="4">4
+    <input type="checkbox" id="5">5
+    <input type="checkbox" id="6">6
+    <input type="checkbox" id="7">7
+    <input type="checkbox" id="8">8
+    <input type="checkbox" id="9">9
+    <script type="text/javascript">
+        /*
+            有这么一种场景：每周要写一个工作报告，周报交给总监批阅，总监手下管理100多人
+            如果每个人直接把周报给总监，那他一整周都看不过来这些周报。
+            那么解决方案，给组长发周报，再由组长提练一份后一次性发给总监。
+
+            在web开发中，也许最大的开销就是网络请求。如在做一个文件同步功能，当我们选中checkbox的时候
+            它对应的文件就会被同步到另一台服务器上面。
+        */
+
+        /*
+            当选中3个checkbox时依次往服务器发送了3个同步文件的请求。但是有可能一秒内同时点击多次。
+            这样频繁的网络请求将会带来相当大的网络开销
+
+            解决方法：可以通过一个代理函数proxySynchronousFile来收集一段时间之内的请求，
+            最后一次性发送给服务器。比如等待2秒之后才把这2秒之内需要同步的文件ID打包发给服务器
+            如果不是对实时性要求非常高的系统，2秒的延迟不会带来太大副作用。却能大大减轻服务器压力
+        */
+
+        var synchoronousFile = function(id){
+            console.log('上传成功'+id);
+        }
+
+        //这样这里的接口和方法就和上面保持统一了就做到了代理
+        var _proxySynchoronousFile = (function(){
+            var cache = [],timer;
+            var upcache = [];
+            return function(id)
+            {
+                if(id in upcache)
+                {
+                    console.log('已经上传');
+                    return;
+                }
+                //将id压入
+                cache.push(id);
+                upcache[id] = '';
+                //如果定时器存在那么就不向下执行
+                if(timer)
+                {
+                    return ;
+                }
+                timer = setTimeout(function(){
+                    //执行完后清除定时器
+                    synchoronousFile(cache.join(','));
+                    clearTimeout(timer);
+                    timer = null;
+                    //再将数组清零 上传过的就清除
+                    cache.length = 0;
+                },2000);
+            }
+        })();
+
+
+        var check = document.getElementsByTagName('input');
+        for(var i=0,c;c=check[i++];)
+        {
+            c.onclick = function(){
+                if(this.checked === true)
+                {
+                    _proxySynchoronousFile(this.id);
+                }
+            }
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        // var proxySynchronousFile = (function(){
+        //     var cache = []; //用于保存指定时间内的同步文件的
+        //     var timer;
+        //     return function(id)
+        //     {
+        //         cache.push(id);
+        //         if(timer){ //保证不会覆盖已经存在的定时器
+        //             return ;
+        //         }
+        //         timer = setTimeout(function(){
+        //             synchoronousFile(cache.join(','));
+        //             clearTimeout(timer);
+        //             timer = null;
+        //             cache.length = 0; //清除这个缓存数组
+        //
+        //         },2000);
+        //     }
+        // })();
+
+
+
+
+    </script>
+</body>
+</html>

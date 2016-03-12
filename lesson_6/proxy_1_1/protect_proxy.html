@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>保护代理模式</title>
+</head>
+<body>
+    <script type="text/javascript">
+        /*
+            保护代理模式
+            代理B可以帮助代理A过滤掉一些请求，比如送花的人中年龄太大的或者没有宝马的。这种请求就可以直接在代理B那里
+            被拒绝掉，这种代理叫作“保护代理” A和B一个充当白脸，一个充当黑脸  A继续保持他当前的形像，不拒绝任何请求，而B是找了代理
+            B来请求，他就可以控制A的访问请求。
+            因为new Flower的操作是昂贵的，所以能不能在A心情好的时候直接由B去new Flower传递给A呢
+            这样就避免了不知道A什么时候心情好的时候就new Flower这个对象的浪费。
+        */
+
+        var Flower = function(){}
+
+        var xiaomin = {
+            age:20,
+            sendFlower:function(target)
+            {
+                target.receiveFlower(this.age);
+            }
+        }
+
+        //这样保护代理那么就可以 先进行一个预判断，。如果符合这边代理的要求那么再传送到A那里进行下一步的操作
+        //相当 于B就是用来过滤一些不符合A的请求的请求对象，而A只接受对象，不处理他是否符合
+        //这就是单一职责的
+        var B = {
+            receiveFlower:function(age){
+                if(age>20)
+                {
+                    console.log('您不符合B的要求');
+                    return ;
+                }
+                A.listenGoodMood(function(){    //监听A的好心情
+                    var flower = new Flower(); //延迟创建flower对象
+                    A.receiveFlower(flower);
+                })
+            }
+        }
+        //只负责接收 不做其他处理
+        var A ={
+            receiveFlower:function(flower)
+            {
+                console.log('收到花了');
+            },
+            listenGoodMood:function(fn){
+                setTimeout(function(){  //假设10秒后心情变好
+                    fn();
+                },2000);
+            }
+        }
+
+        xiaomin.sendFlower(B);
+
+    </script>
+</body>
+</html>

@@ -29,6 +29,7 @@ var throttle = function(fn,lazyTime){
         }
         //否则就延迟执行
         timer = setTimeout(function(){
+        	//定时器一定要执行之后就清除和设置为防止叠加
             clearTimeout(timer);
             timer = null;
             __self.apply(__me,args);

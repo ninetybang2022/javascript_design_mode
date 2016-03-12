@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>缓存代理</title>
+</head>
+<body>
+    <script type="text/javascript">
+        /*
+            缓存代理的实现
+            缓存代理可以为一些开销大的运算结果提供暂时的存储，在下次运算时，如果存在相同的结果那么直接调用
+            如果参数和上次请求的参数一样，那么直接调用缓存的结果
+        */
+
+        //mult只完成乘积的计算
+        var mult = function()
+        {
+            var result = 1;
+            console.log('开始计算乘积');
+            for(var i=0,num;num=arguments[i++];)
+            {
+                result *= num;
+            }
+            return result;
+        }
+        //proxyCacheMult 而他做的是先要判断是否存在存在中，如果存在缓存中那么直接返回结果，如果不存在缓存中再去计算
+        var proxyCacheMult = (function()
+        {
+            //缓存
+            var cache = [];
+            //否则直接进行计算
+            return function()
+            {
+                var args = Array.prototype.join.call(arguments);
+                if(args in cache)
+                {
+                    return cache[args];
+                }
+                return cache[args] = mult.apply(this,arguments);
+            }
+        })();
+
+        console.log(proxyCacheMult(1,2,3,4));
+        //当第二次使用缓存代理模式进行计算的时候，那么第一次计算已经缓存下来不会再调用mult进行计算直接返回相应的值
+        console.log(proxyCacheMult(1,2,3,4));
+
+
+
+    </script>
+</body>
+</html>

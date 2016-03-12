@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>代理模式的使用</title>
+</head>
+<body>
+    <script type="text/javascript">
+        /*
+            代理模式的关键是：当客户不方便直接访问一个对象或者不满足需要的时候，提供一个替身对象来控制对这个对象的访问
+            客户实际上访问的是替身对象。替身对象对请求做出一些处理之后，再把请求转交给本体对象
+
+            非代理模式：客户---》 实体
+                       客户--->代理--->本体
+
+        */
+
+        /**
+            客户  直接 本体
+        var Flower = function(){}
+
+        var xiaoming = {
+            sendFlower:function(target){
+                var flower = new Flower();
+                target.recevierFlower(flower);
+            }
+        }
+
+        var A ={
+            recevierFlower:function(flower){
+                console.log('收到花'+flower);
+            }
+        }
+
+        xiaoming.sendFlower(A);
+
+        //下面是代理B，即小明通过代理B来给A送花
+        var Flower = function(){};
+        var xiaoming = {
+            sendFlower:function(target){
+                var flower = new Flower();
+                target.receiverFlower();
+            }
+        }
+
+        //这里做了一层代理  使用其他对象来传递相应内容
+        var B = {
+            receiverFlower:function(flower)
+            {
+                A.receiverFlower(flower);
+            }
+        };
+        var A = {
+            receiverFlower:function(flower)
+            {
+                console.log('收到花了'+flower);
+            }
+        };
+        //而这里送花不是直接送给A而是送给了B再由B送给A
+        xiaoming.sendFlower(B);
+        **/
+        //因为xiaoming这个对象无法知道直接给A参数是否有返回，因为B和A有相应的联系，所以他将参数传递B再由B转给A。
+        //因为B会监听A，知道什么时候传递参数会有返回值
+        var Flower = function(){}
+
+        var xiaoming = {
+            sendFlower:function(target){
+                var flower = new Flower();
+                target.receiveFlower(flower);
+            }
+        }
+        //代理B
+        var B ={
+            receiveFlower:function(flower)
+            {
+                A.listenGoodMood(function(){ //监听A的好心情
+                    A.receiveFlower(flower);
+                })
+            }
+        }
+
+        var A = {
+            receiveFlower:function(flower){
+                console.log('收到花'+flower);
+            },
+            listenGoodMood:function(fn){
+                setTimeout(function(){  //假设10秒后心情变好
+                    fn();
+                },10000);
+            }
+        };
+
+        xiaoming.sendFlower(B);
+
+    </script>
+</body>
+</html>

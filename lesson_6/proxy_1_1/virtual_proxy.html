@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>虚拟代理</title>
+</head>
+<body>
+    <script type="text/javascript">
+        /*
+            保护代理 用于控制不同权限的对象对目标对象的访问，但是js并不容易实现保护代理，因为
+            无法判断谁访问了某个对象，而虚拟代理是常用的一种代理。
+
+            虚拟代理  虚拟代理把一些开销很大的对象，延迟到真正需要它的时候才去创建
+                虚拟代理实现图片预加载很常用，如果直接给某个img标签节点设置src属性，由于图片
+                过大或者网络不好，图片的位置就会存在一个空白。常见的做法是先用一张loading图片占位
+                然后用异步的方式加载图片，等待图片加载好了再把它填到img节点中。这种场景就很
+                适合使用虚拟模式代理来处理。
+
+            为什么要使用代理：
+                单一职责：一个类而言，应该仅有一个引起它变化的原因。如果一个对象承担了多项职责。就意味着这个对象将变得巨大
+                引起它变化的原因可能会有多个。面向对象设计鼓励将行为分布到细粒度的对象中。如果一个对象承担的职责过多，等于把这
+                些职责耦合到一起了，这种耦合会导致脆弱和低内聚的设计。当变化 发生时，设计可能会遭到意外的破坏
+
+                在面向对象的程序设计中，大多数情况下，若违反其他任何原则。同时将违反开放-封闭原则。
+
+        */
+        var myImage = (function(){
+            var imgNode = document.createElement('img');
+            document.body.appendChild(imgNode);
+            return{
+                setSrc:function(src){
+                    imgNode.src = src;
+                }
+            }
+        })();
+        //设置一个虚拟代理    他负责预加载图片，当图片加载完成后他再请求重新交给myImage
+        //这里并没有改变myimage的接口，而是通过代理对象，实际上这给系统添加了新的行为，这就符合 开放-封闭原则
+        var proxyImg = (function(){
+            var img  = new Image;
+            img.onload = function()
+            {
+                myImage.setSrc(this.src);
+            }
+            return {
+                setSrc:function(src){
+                    myImage.setSrc('./loading.gif');
+                    img.src = src;
+                }
+            }
+        })();
+        proxyImg.setSrc('https://avatars3.githubusercontent.com/u/16360674?v=3&s=460');
+    </script>
+</body>
+</html>

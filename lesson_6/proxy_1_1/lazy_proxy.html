@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>虚拟代理在惰性加载中的应用</title>
+</head>
+<body>
+    <script type="text/javascript">
+        /*
+            虚拟代理在惰性加载中的应用
+                有的时候一个功能的js文件比较大，但是一开始可能并不要加载这么大的文件。当使用到相应功能的时候
+                才去加载这个文件
+
+                通常解决方案，是用一个占位的代理对象来给用户提前使用，这个代理对象提供给我们的接口，跟实际本体是一样的
+                用户使用空上代理对象来打印log的时候，并不会真正的控制台内打印日志，更不会在页面中创建任何DOM节点，即使我们想这样做也无能
+                为力，因为真正的本体的不没有加载
+
+                于是，可以把打印log的请求都包裹在一个函数里面，这个包装了请求的函数就相当于其他语言中的命令模式Command模式
+                随后这些函数将全部被放到缓存队列中，这些逻辑都是代理对象中完成的。等用户按下指定的按钮唤出控制台的时候，才开始加载
+                真正的本体的js对象文件加载完成之后将遍历  代理对象中的缓存队列函数。同时依次执行他们
+        */
+
+        var cache = [];
+        var miniConsole = (function(){
+            var cache = [];
+            //当按下f2的时候他才真正的去执行相应的操作。
+            var handler = function(ev)
+            {
+                if(ev.keyCode === 113){
+                    //当miniConsole加载完成后一个个执行cache中的缓存对象
+                    //当按下f2的时候才去加载相应的js文件再执行相应 的js操作，而这时请求的是本体对象，而不再进虚拟代理对象
+                    var script = document.createElement('script');
+                    script.onload = function()
+                    {
+                        for(var i=0,fn;fn = cache[i++];){
+                            fn();
+                        }
+                    }
+                }
+                script.src = 'miniConsole.js';
+                document.getElementsByTagName('head')[0].appendChild(script);
+                document.body.removeEventListener('keydown',handler); //只加载一次miniConsole.js//加载完成后立即删除
+            }
+
+            document.body.addEventListener('keydown',handler,false);
+
+            return {
+                log:function(){
+                    //这里默认情况下他只是将，要执行的操作压入到一个缓存队列中
+                    var args = arguments;
+                    cache.push(function(){
+                        return miniConsole.log.apply(miniConsole,args);
+                    })
+                }
+            }
+        })();
+
+        miniConsole.log(111);
+        miniConsole.log(222);
+        miniConsole.log(333);
+
+
+        // miniConsole.log(1);
+        //当按下f2时  开始加载真正的miniConsole
+        // var handler = function(ev){
+        //     if(ev.keyCode === 113)
+        //     {
+        //         var script = document.createElement('script');
+        //         script.onload = function()
+        //         {
+        //             for(var i=0,fn;fn=cache[i++];){
+        //                 fn();
+        //             }
+        //         }
+        //         script.src = 'miniConsole.js';
+        //         document.getElementsByIdTagName('head')[0].appendChild(script);
+        //     }
+        // };
+
+
+
+    </script>
+</body>
+</html>

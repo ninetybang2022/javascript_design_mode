@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>代理和本体接口的一致性</title>
+</head>
+<body>
+    <script type="text/javascript">
+        /*
+            所以这里的本体，和代理实现了一致的接口setSrc()方法
+
+            在外部看来，代理对象和本体是致的。代理接手请求的过程对于用户来说是透明的。
+            用户并不清楚代理和本体的区别，这样做有两个好处
+            1、可以放心地请求代理，他只关心是否能得到想要的结果
+            2、在任何使用本体的地方都可以替换成使用代理
+
+            这样做的好处在于：在面向对象的语言中：他们实现了依赖倒置原则，通过接口进行向上转型，从而避开编译器的类型检查，
+                            代理和本体将来可以被替换使用
+            在javascript这种动态语言中，通过鸭子类型检测代理和本体是否都实现了相同的接口，另外大多数时候甚至干脆不检测
+            全部依赖于程序员的自觉性。
+            另外，如果代理对象和本体对象都为一个函数（函数也是对象），函数必须都能被执行，则可以认为它们也具有一致“接口”
+        */
+        var myImage = (function(){
+            var imgNode = document.createElement('img');
+            document.body.appendChild(imgNode);
+            return function(src){
+                imgNode.src = src;
+            }
+        })();
+
+        //代理方法的接口和要本体保持一致，只不过代理做了一些其他额外的操作。
+        //当额外操作过后，再将请求发送给本体     这样在外部，替换方法的时候，那么不用修改任何内容，只要将
+        //方法名改为myImage就可以实现，无预加载图片的加载图片功能
+        var proxyImage = (function(){
+            var img = new Image;
+            img.onload = function(){
+                myImage(this.src);
+            }
+
+            return function(src){
+                myImage('loading.gif');
+                img.src = src;
+            }
+        })();
+
+        proxyImage('https://www.baidu.com/img/bd_logo1.png')
+    </script>
+</body>
+</html>
