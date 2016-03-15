@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>倒序迭代器</title>
+</head>
+<body>
+    <script type="text/javascript">
+        /*
+            倒序迭代器
+            迭代器模式提供了循环访问一个聚合对象中每个元素的方法。
+            但是它没有规则我们以顺序倒序还是循环遍历聚合对象。
+        */
+
+        //实现一个倒序迭代器
+        var invertedEach = function(ary,callback)
+        {
+            for(var l=ary.length-1;l>=0;l--)
+            {
+                callback(l,ary[l]);
+            }
+        }
+
+        invertedEach([1,2,3],function(i,n){
+            console.log(n); //输出 3 2 1
+        })
+
+
+    </script>
+</body>
+</html>

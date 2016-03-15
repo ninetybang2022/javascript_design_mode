@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>javascript内部迭代器和外部迭代器</title>
+</head>
+<body>
+    <script type="text/javascript">
+        /*
+            内部迭代器和外部迭代器
+                迭代器可以分为 内部迭代器和外部迭代器。
+                1、内部迭代器
+                    上个例子中的each迭代器是内部迭代器，each函数的内部已经定义好了迭代规则，它完全接手整个迭代过程
+                    外部只需要一次初始调用即可
+                    但是这也是内部迭代器的缺点，因为内部实现了外部无法知道，所以他无法迭代2个数组
+
+                    比如现在有一个需求，要判断2个数组里元素的值是否完全相等，如果不改写each函数本身的代码.那只能从each的回调函数入手
+
+
+        */
+        var each = function(ary,callback)
+        {
+            for(var i =0,l=ary.length;i<l;i++)
+            {
+                callback.call(ary[i],i,ary[i]); //把下村和元素当作参数传给callback函数
+            }
+        }
+        //这里去扩展了each内部迭代器compare先比较两个 数组是否长度相等如果相等再进行比较
+        var compare = function(ary1,ary2)
+        {
+            if(ary1.length !== ary2.length)
+            {
+                throw new Error('ary1和ary2不相等');
+            }
+            each(ary1,function(i,n){
+                if(n!==ary2[i])
+                {
+                    throw new Error('ary1和ary2不相等');
+                }
+            });
+            alert('ary1和ary2相等');
+        }
+        // compare([1,2,3],[1,2,4]);
+
+        /*
+            2、外部迭代器
+                外部迭代器必须显式请求迭代下一个元素
+                外部迭代器增加了一些调用的复杂度，但相对于增强了迭代器的灵活性，可以手工控制迭代的过程或者顺序
+        */
+
+        //Ruby的一个迭代器实现 javascript实现
+        var Iterator = function(obj){
+            var current = 0;
+            var next = function(){
+                current += 1;
+            }
+            var isDone = function(){
+                return current >= obj.length;
+            }
+            var getCurrItem = function(){
+                return obj[current];
+            }
+            return {
+                next:next,
+                isDone:isDone,
+                getCurrItem:getCurrItem
+            }
+        }
+
+        //改写compare函数
+        var compare = function(iterator1,iterator2){
+            while(!iterator1.isDone() && !iterator2.isDone())
+            {
+                if(iterator1.getCurrItem() !== iterator2.getCurrItem())
+                {
+                    throw new Error('iterator1和iterator2不相等');
+                }
+                iterator1.next();
+                iterator2.next();
+            }
+            alert('iterator1和iterator2相等');
+        }
+
+        var iterator1 = Iterator([1,2,3]);
+        var iterator2 = Iterator([1,2,3]);
+        compare(iterator1,iterator2);
+    </script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>迭代类数组对象和字面量对象</title>
+</head>
+<body>
+    <script type="text/javascript">
+        /*
+            迭代数组对象和字面量对象
+            迭代器模式不仅可以迭代数组，还可以迭代一些类数组的对象，比如argumnets  {"0":'hello',"1":'goodjobs'}
+            无论是内部迭代器还是外部迭代器，只要被迭代的聚合对象拥有length属性而且可以用下标访问，那它就可以被迭代
+
+            实现jq中的each函数来封装各种迭代行为
+        */
+        var Type = {};
+        for(var i=0,type;type=['String','Array','Object','Number'][i++];)
+        {
+            (function(type){
+                Type['is'+type] = function(obj)
+                {
+                    if(Object.prototype.toString.call(obj) == '[object '+type+']')
+                    {
+                        return true;
+                    }
+                    return false;
+                }
+            })(type);
+        }
+
+        var each = function(obj,callback)
+        {
+            var value,i=0,length=obj.length,isArray = Type.isArray(obj);
+            if(isArray){ //迭代数组
+                for(;i<length;i++){
+                    value = callback.call(obj[i],i,obj[i]);
+                    if(value === false)
+                    {
+                        break;
+                    }
+                }
+            }else{
+                for(i in obj) //迭代object
+                {
+                    value = callback.call(obj[i],i,obj[i]);
+                    if(value===false)
+                    {
+                        break;
+                    }
+                }
+            }
+            return obj;
+        }
+    </script>
+</body>
+</html>

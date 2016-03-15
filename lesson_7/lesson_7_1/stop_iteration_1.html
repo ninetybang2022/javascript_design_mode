@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>中止迭代在实际的应用中</title>
+</head>
+<body>
+    <script type="text/javascript">
+        var getUploadObj = function()
+        {
+            try{
+                return new ActionXObject('TXFTNActiveX.FTNUpload');
+            }catch(e){
+                if(supportFlash()){  //supportFlash函数未提供
+                    var str = '<object type="application/x-shockwave-flash"></object>';
+                    return $(str).appendTo($('body')); //
+                }else{
+                    var str = '<input type="file" type="file" />'; //表单上传
+                    return $(str).appendTo($('body'));
+                }
+            }
+        }
+        /*
+            上面的代码意思为：在不同的浏览器下，选择上传的方式是不一样的。如果浏览器没 有使用上传控件，
+            那么就使用flash如果连flash也没有安装，那么就使用表单上传
+
+            上面的代码，为了得到一个upload对象，这个getUploadObj函数里充斥着try catch以及if条件语句。缺点是显而易见的
+            第一是很难阅读，第二是严重违反开闭原则。
+
+            现在来梳理一下：目前一共有3种可能上传的方式，不知道目前正在使用的浏览器支持哪种，
+                比如有一串，钥匙其中有3把，不知道哪一种可以开，那就要一个个去尝试。直接到开了门为止
+
+                同样，我们把每种获取upload对象的方法都封装在各自的函数里，然后使用一个迭代器，迭代获取
+                这些upload对象，直到获取到一个可用的为止
+        */
+        //使用上传控件
+        var getActiveUploadObj = function(){
+            try{
+                return new ActiveXOBject('TXFTNActiveX.FTNUpload');
+            }catch(e)
+            {
+                return false;
+            }
+        }
+        //支持使用flash上传
+        var getFlashUploadObj = function(){
+            if(supperFlash()){ //supportFlash未提供
+                var str = '<object type="application/x-shockwave-flash"></object>';
+                return $(str).appendTo($('body'));
+            }
+        }
+
+        //使用表单
+        var getFormUploadObj = function(){
+            var str = '<input name="file" type="file" class="ui-file" />'; //表单上传
+            return $(str).appendTo($('body'));
+        }
+
+        /*
+            在getActiveUploadObj getFlashUploadObj getFormUploadObj 这3个函数中都有同一个约定
+            如果该函数里面的upload对象是可用的，则让函数返回该对象，反之返回false 提示迭代器继续往后进行迭代
+
+            1、提供一个可以被迭代的方法，使得getActiveUploadObj getFlashUploadObj getFormUploadObj这三个函数中都有同一个约定
+            如果该函数里面的Upload对象是可用的，则让函数返回该对象，返回之返回false，提示迭代器继续往后面进行迭代
+
+            1、提供一个可以被迭代的方法，使得getActiveUploadObj getFlashUploadObj 依照优先级被循环迭代
+            2、如果正在被迭代的函数返回一个对象，则表示找到了正确的Upload对象，反之如果该函数返回false则让迭代继续
+        */
+
+        var iteratorUploadObj = function(){
+            for(var i=0,fn;fn=arguments[i++];)
+            {
+                var uploadObj = fn()
+                if(uploadObj!==false)
+                {
+                    return uploadObj;
+                }
+            }
+        }
+
+        //如果以后还要添加h5上传如果只要这样做
+        var getWebkitUpload = function()
+        {
+            /////todo
+        }
+        var getHtml5Upload = function()
+        {
+            ///todo
+        }
+
+        //调用 //只要在这里再添加即可
+        iteratorUploadObj(getActiveUploadObj,getFlashUploadObj,getFormUploadObj,getWebkitUpload,getHtml5Upload);
+
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>中止迭代器</title>
+</head>
+<body>
+    <script type="text/javascript">
+        /*
+            中止迭代器
+            迭代器可以像普通的for循环中的break一样被中止，提供一个跳出循环的方法，
+            比如上面的代码中
+            if(value===false)
+                break;
+
+            这段代码的意思是当，约定如果回调函数的执行结果返回false,则提前终止循环。
+        */
+        var each = function(ary,callback)
+        {
+            for(var i=0,l=ary.length;i<l;i++)
+            {
+                if(callback(i,ary[i])===false) //callback的执行结果返回false那么中止后面的迭代
+                {
+                    break;
+                }
+            }
+        }
+        //因为在上面的代码中已经有了停止的条件当回调函数返回false那么就停止迭代
+        each([1,2,3,4,5,6],function(i,n){
+            if(n>3)
+            {
+                return false;
+            }
+            console.log(n); //只会输出 1,2,3
+        })
+    </script>
+</body>
+</html>
