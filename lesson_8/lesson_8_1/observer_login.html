@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>订阅-发布模式 登录实例</title>
+</head>
+<body>
+    <script type="text/javascript">
+        var events = {
+            //事件缓存
+            eventListens:{},
+            listen:function(key,fn)
+            {
+                if(!this.eventListens[key])
+                {
+                    this.eventListens[key] = [];
+                }
+                this.eventListens[key].push(fn);
+            },
+            trigger:function()
+            {
+                var key = Array.prototype.shift.call(arguments);
+                var fns = this.eventListens[key];
+                //如果不存在这个事件那直接返回false
+                if(!fns || fns.length ===0)
+                {
+                    return false;
+                }
+                for(var i=0,fn;fn=fns[i++];)
+                {
+                    fn.apply(this,arguments);
+                }
+            }
+        };
+
+
+        events.listen('lwb',function(){
+            console.log('abcd');
+        });
+
+        events.listen('lwl',function(){
+            console.log('efgh');
+        });
+
+        events.trigger('lwl');
+
+
+
+
+        /*
+            订阅-发布模式  登录实例
+            比如有一个网站，商城网站登录，网站里面header头部、nav导航、消息列表、购物车模块
+            但是渲染他们有一个共同的条件就就是必须用户登录成功后，拿到登录的信息
+            下面是不好的实践，他们会让这些模块产生很强的耦合性
+
+            login.succ(function(data){
+                headet.setAvatar(data.avatar);
+                nav.setAvatar(data.avatar);
+                message.refresh() //刷新消息
+                cart.refresh(); //刷新购物车
+            })
+
+            因为这个原因，还要知道hedaer模块中有一个方法叫做setAvatar nav模块中有一个叫做setAvatar的方法等 。。。。
+            如果到了某个时间要新添加一个刷新收货地址那么又要在上面的login.succ回调函数中再添加一个
+            address.refresh()方法
+        */
+        $.ajax('xxxx.com',function(data){
+            login.trigger('loginSucc',data); //触发登录成功事件
+        })
+        //各个模块监听
+        var header = (function(){
+            login.listen('loginSucc',function(data){
+                header.setAvatar(data.avatar);
+            });
+            return{
+                setAvatar:function(avatar){
+                    console.log('这里是设置头像')
+                }
+            }
+        })();
+
+        var nav = (function(){
+            login.listen('loginSucc',function(data){
+                nav.setAvatar(data.avatar);
+            });
+            return{
+                setAvatar:function(avatar){
+                    console.log('设置头像');
+                }
+            }
+        })();
+
+        var address = (function(){
+            login.listen('loginSucc',function(data){
+                nav.refresh();
+            });
+            return{
+                refresh:function(){
+                    console.log('刷新地址');
+                }
+            }
+        })
+
+    </script>
+</body>
+</html>

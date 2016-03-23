@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>自定义事件</title>
+</head>
+<body>
+    <script type="text/javascript">
+        /*
+            除了DOM事件，还可以算定义的事件，这种依靠自定义事件完成的发布-订阅模式可以用于任何js代码中
+            如何实现：
+                1、首先要指定好谁充当发布者（比如售楼处）
+                2、然后给发布者添加一个缓存列表，用于存放回调函数以便通知订阅者（售楼处的花名册）
+                3、最后发布消息的时候，发布者会遍历这个缓存列表，依次触发里面存放的订阅者回调函数  遍历花名册、挨个发短信
+
+            另外，还可以往回调函数里填入一些参数，订阅都接收这些参数，很有必要，比如售楼处可以在发给订阅者的短信里加上房子的单价，面积等 。。。
+            而订阅都可以收到这些信息
+        */
+
+        var salesOffices = {} //售楼处
+        salesOffices.clientList ={};//花名册 缓存列表存放订阅者的回调函数
+        //订阅消息
+        salesOffices.listen = function(key,fn) //增加订阅者
+        {
+            if(!this.clientList[key])
+            {
+                this.clientList[key] = []; //订阅消息添加进缓存列表
+            }
+            this.clientList[key].push(fn); //订阅消息添加进缓存列表
+        }
+
+        salesOffices.trigger = function()  //发布消息
+        {
+            //第一个参数为key
+            var key = Array.prototype.shift.call(arguments),
+                fns = this.clientList[key];
+            //如果没有订阅消直接返回
+            if(!fns || fns.length===0){
+                return false;
+            }
+            for(var i =0,fn;fn=fns[i++];)
+            {
+                fn.apply(this,arguments); //是发布消息时带上的参数
+            }
+        }
+        //测试使用
+        salesOffices.listen('xiaoming',function(price,squareMeter){
+            console.log('价格='+price);
+            console.log('squareMeter='+squareMeter);
+        });
+
+        salesOffices.listen('xiaohong',function(price,squareMeter){
+            console.log('价格='+price);
+            console.log('squareMeter='+squareMeter);
+        });
+        //这段代码存在一个问题，因为当第一次调用的时候，这个发布者不想知道下个发布都订阅的内容，但是这里他还是会打印出来，打印两次
+        //解决这个问题要给增加一个标示key让订阅者只订阅自己感兴趣的内容
+        //这样上面添加了一个Key那么他只就只能看到自己订阅的内容了
+        salesOffices.trigger('xiaohong',2000000,88);
+        salesOffices.trigger('xiaoming',4000000,160);
+
+
+    </script>
+</body>
+</html>

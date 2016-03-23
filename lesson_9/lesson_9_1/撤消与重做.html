@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>命令模式中撤消与重做</title>
+</head>
+<body>
+<button id="replay">播放录像</button>
+<script>
+    /**
+     * 在执行了一系列命令之后，想要撤消这一系列命令。比如在一个围棋程序中，现在已经下了10步棋。
+     * 需要一次性悔棋到5步。可以把所有执行过的下棋命令都储存到一个历史列表中，然后倒序循环来依次执行这些命令Undo操作
+     *
+     * 然而，在某些情况下无法顺利地利用Undo操作让对象回到execute之前的状态，比如在一个canvas画图程序中，画面上有一些点，
+     * 我们在这些点之间画N条曲线把这些点相互连接起来，当然这是用命令模式来实现，但是我们却难为这里的命令对象定义一个擦除某条曲线的Undo操作
+     * ，因为在canvas画图中，擦除一条线相对不容易实现。
+     *
+     * 现在最好的办法是将画面全部清空，然后把刚才执行过的命令再执行一次，这一点同样可以利用一个历史列表来实现。
+     * 记录命令日志。然后重复执行它们，这是逆转不可逆命的一个好办法。
+     */
+    var Ryu = {
+        attack:function(){
+            console.log('攻击');
+        },
+        defense:function(){
+            console.log('防御');
+        },
+        jump:function(){
+            console.log('跳跃');
+        },
+        crouch:function(){
+            console.log('蹲下');
+        }
+    }
+
+    var makeCommand = function(receiver,state){  //创建命令
+        return function(){
+            try{
+                receiver[state]();
+            }
+            catch(e)
+            {
+                console.log('无效');
+            }
+        }
+    }
+
+
+    var commands = {
+        "119":"jump",//w
+        "115":"crouch",//s
+        "97":"defense",  //a
+        "100":"attack"  //d
+    };
+
+    var commandStack = []; //保存命令的堆栈
+
+
+    document.onkeypress = function(ev)
+    {
+        var keyCode = ev.which || ev.keyCode;
+        var command = makeCommand(Ryu,commands[keyCode]);
+        if(command)
+        {
+            commandStack.push(command);
+            command();
+        }
+    }
+
+    document.querySelector('#replay').onclick = function()
+    {
+        var command;
+        while(command=commandStack.shift())
+        {
+            command();
+        }
+    }
+
+</script>
+
+</body>
+</html>

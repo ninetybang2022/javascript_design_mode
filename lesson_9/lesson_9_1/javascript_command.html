@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>javascript实现命令模式</title>
+</head>
+<body>
+    <button id="button1">点击按钮1</button>
+    <button id="button2">点击按钮2</button>
+    <button id="button3">点击按钮3</button>
+    <button id="button4">点击按钮4</button>
+
+<script>
+        /**
+         * 命令模式的实现
+         * 假如：我是一个餐厅服务员，那么一天的工作为：
+         *      当某位客人点餐或者打来订餐电话后，我会把他的需求都写在清单上。然后交给厨房。
+         *      客人不用关心是哪些厨师帮他炒菜。我们餐厅还可以满足客人需要的定时服务，比如客人可能当前正在回家的路上，
+         *      要求1个小时后才开始炒他的菜
+         *      只要订单还在厨师就不会忘记。客人也可以很方便地打电话来撤销订单。另外如果有太多的客人点餐，厨房可以按照订单的顺序排除炒菜
+         *      这些记录着订餐信息的清单，便是命令模式中的命令对象
+         */
+        /**
+         * 1、命令模式的用途：
+         *      命令模式是最简单和优雅模式之一。命令模式中的命令command指的是一个执行某些特定事情的指令
+         *      命令模式最常见的应用场景是：
+         *          有时候需要向某些对象发送请求，但是并不知道请求的接收者是谁，也不知道被请求的操作是什么
+         *          此时希望用一种松耦合的方式来设计程序，使得请求发送者和请求接收者能够消除彼此之间的耦合关系。
+         *
+         *      拿订餐来说，客人需要向厨师发送请求，但是完全不知道这些厨师的名字和联系方式，也不知道厨师炒菜的方式和步骤。命令模式
+         *      把客人订餐的请求封装成command对象，也就是订餐中的订单对象。这个对象可以在程序中被四处传递，就像订单可以从服务员中传到厨师手中
+         *      这样一来，客人不需要知道厨师的名字，从而解开了请求调用者和请求接收者之间的耦合关系
+         *
+         *      另外，相对于过程化的请求调用，command对象拥有更长的生命周期。对象的生命周期是跟初始请求无关的，因为这个请求已经被封装在了command对象的方法 中
+         *      成为了这个对象的行为。我们可以在程序运行的任意时刻去调用这个方法，就像厨师可以在客人预定1个小时之后帮他炒菜，相当于程序在1个小时之 后才开始执行command对象的方法
+         *
+         *      模拟菜单程序
+         *      命令模式的使用场景：（发送者向某个对象发送请求，但是并不知道这个接收者是谁）
+         *          有时候需要向某些对象发送请求，但是并不知道请求的接收者是谁，也不知道被请求的操作是什么。此时希望用一种松耦合的方式来设计软件
+         *          使得请求发送者和请求接收者能够消除彼此之间的耦合关系 。
+         *
+         *          比如：点击按钮之后，必须向某个负责具体行为的对象发送请求，这些对象就是请求的接收者
+         *              但是目前并不知道接收者是什么对象，也不知道接收者究竟会做什么，此时我们需要借助命令对象的帮助，以便解开按钮和负责具体行为对象之间的耦合
+         *     **设计模式的主题总是把不变的事物和变化的事物分离开。命令模式也不例外，按下按钮之后发生的一些事情是不变的，而具体发生什么事是变化的。**
+         *     //按下按钮这个动作是不变的，但是按下按钮之后发生什么是可变的
+         */
+        var button1 = document.querySelector('#button1');
+        var button2 = document.querySelector('#button2');
+        var button3 = document.querySelector('#button3');
+        var button4 = document.querySelector('#button4');
+        //通用的执行命令的方法
+        //这个函数负责往按钮上面安装命令
+        var setCommand = function(button,command){
+            button.onclick = function(){
+                command.execute();
+            }
+        }
+
+
+        /**
+         * 下面是几个具体的命令
+         */
+        var MenuBar = {
+            refresh:function(){
+                console.log('刷新菜单目录')
+            }
+        }
+
+        var SubMenu = {
+            add:function(){
+                console.log('增加子菜单')
+            },
+            del:function(){
+                console.log('删除子菜单')
+            }
+        }
+
+      //在添加命令之前先封装在命令类中
+        var RefreshMenuBarCommand = function(receiver){
+            this.receiver = receiver;
+        }
+        //刷新菜单的命令
+        RefreshMenuBarCommand.prototype.execute = function(){
+            this.receiver.refresh();
+        }
+
+        //添加子菜单 命令
+        var AddSubMenuCommand = function(receiver){
+            this.receiver = receiver;
+        }
+
+        AddSubMenuCommand.prototype.execute = function(){
+            this.receiver.add();
+        }
+        //删除子菜单命令
+        var DelSubMenuCommand = function(receiver){
+            this.receiver = receiver;
+        }
+        DelSubMenuCommand.prototype.execute = function()
+        {
+            this.receiver.del();
+        }
+
+        //最后就是把命令接收者传入到command对象中，并且 把command对象安装到button上
+        setCommand(button1,new AddSubMenuCommand(SubMenu));
+        setCommand(button2,new DelSubMenuCommand(SubMenu));
+        setCommand(button3,new RefreshMenuBarCommand(MenuBar));
+
+</script>
+</body>
+</html>

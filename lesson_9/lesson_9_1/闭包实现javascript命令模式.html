@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>闭包实现javascript的命令模式</title>
+</head>
+<body>
+    <button id="btn1">这是一个测试</button>
+<script>
+    /**
+     * 命令模式将过程式的请求调用封装在command对象的execute方法里，通过封装方法 调用，可以把运算块包装成形，command
+     * 对象可以被四处传递。所以在调用命令的时候，client不需要关事情是如何进行的
+     *
+     * 命令模式的由来，其实就是回调函数的一个面向对象的替代品
+     *
+     * 在面向对象设计中，命令模式的接收者被当成command对象的属性保存起来，同时约定执行命令的操作调用command.execute()方法，在使用闭包的命令模式实现
+     * 接收者被封装在闭包产生的环境中，执行命令的操作可以更加简单，仅仅执行回调函数即可。
+     * 无论接收者被保存为对象的属性。还是被封闭包产生的环境中，在将来执行命令的时候，接收者都能被顺利访问。
+     * 用闭包实现命令模式：
+     */
+//    var setCommand = function(button,func){
+//        button.onclick = function(){
+//            func();
+//        }
+//    }
+//
+
+//
+//    var RefreshMenuBarCommand = function(receiver){
+//        return function(){
+//            receiver.refresh();
+//        }
+//    }
+//
+//    var refreshMenuBarCommand = RefreshMenuBarCommand(MenuBar);
+//    setCommand(document.querySelector('#btn1'),refreshMenuBarCommand);
+
+    var MenuBar = {
+        refresh:function(){
+            console.log('刷新菜单');
+        }
+    }
+
+    var FootBar = {
+        refresh:function(){
+            console.log('页脚刷新');
+       }
+    }
+      //如果想更明确地表达当前正在使用命令模式，或者除了执行命令之外，将来有可能还要提供撤销命令等操作，可以把执行函数改为调用execute()
+      //命令接收者
+        var RefreshCommand = function(){
+            return{
+                execute:function(){
+                    MenuBar.refresh();
+                    FootBar.refresh();
+                }
+            }
+        }
+
+        // 设置命令，客户端只要使用command命令中只存在一个execute()方法用于执行命令
+        //至于内部如何实现他不用管
+        var setCommand = function(button,command){
+            button.onclick = function(){
+                command.execute();
+            }
+        }
+
+        //这里还可以再定制，如果想只操作某个命令，那么RefreshCommand(FootBar)那么只刷新页脚
+        var refreshMenuBarCommand = RefreshCommand();
+        setCommand(document.querySelector('#btn1'),refreshMenuBarCommand);
+
+</script>
+</body>
+</html>

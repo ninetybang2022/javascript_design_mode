@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>命令模式  撤销命令</title>
+</head>
+<body>
+<div id="ball" style="position:absolute;background:#000;width:50px;height:50px;"></div>
+输入小球移动后的位置<input type="text" id="pos" />
+<button id="moveBtn">开始移动</button>
+<button id="cancelBtn">cancel</button>
+<script>
+    var tween = {
+        linear: function(t,b,c,d)
+        {
+            return c*t/d+b;
+        },
+        easeIn:function(t,b,c,d)
+        {
+            return c*(t/=d)*t+b;
+        },
+        strongEaseIn:function(t,b,c,d)
+        {
+            return c*(t/=d)*t*t*t*t+b;
+        },
+        strongEaseOut:function(t,b,c,d){
+            return c * ((t=t/d-1) * t*t*t*t+1)+b;
+        },
+        sineaseIn:function(t,b,c,d){
+            return c*(t/=d) * t * t +b;
+        },
+        sineaseOut:function(t,b,c,d){
+            return c*((t=t/d-1)*t*t+1)+b;
+        }
+    };
+
+    var Animate = function(dom){
+        this.dom = dom; //进行运动的dom节点
+        this.startTime = 0;     //动画开始时间
+        this.startPos = 0;      //动画开始时、dom节点的位置、即dom的初始位置
+        this.endPos   = 0;       //动画结束时，dom节点的位置、即dom的目标位置
+        this.propertyName = null; //dom节点需要被行改变的css属性名
+        this.easing = null;     //缓动算法
+        this.duration=null;     //动画持续时间
+    }
+    //下面是start方法负责启动这个动画。在动画被启动的瞬间，要记录一些信息，供缓动算法在以后计算小球当前位置的时候使用。
+    //在记录完成这些信息后，上此方法 还要负责启动定时器
+    Animate.prototype.start = function(propertyName,endPos,duration,easing){
+        this.startTime = +new Date; //动画启动时间
+        this.startPos  = this.dom.getBoundingClientRect()[propertyName]; //dom节点初始位置
+        this.propertyName=propertyName; //dom节点需要被改变的CSS属性名
+        this.endPos      = endPos;        //dom节点目标位置
+        this.duration    = duration;        //动画持续时间
+        this.easing = tween[easing]; //缓动算法
+
+        var self = this;
+        var timeId = setInterval(function(){
+            if(self.step() === false){ //如果动画结束，则清除定时器
+                clearInterval(timeId);
+            }
+        },19);
+    }
+    ///上面的函数接受4个参数
+    //propertyName 要改变CSS的属性名 left top right bottom
+    //endPos 小球运动的目标位置
+    //duration 动画持续时间
+    //easing 缓动算法
+    //这个step函数：该方法代表小球 运动的每一帧要做的事情。
+    Animate.prototype.step = function(){
+        var t = +new Date; //取得当前时间
+        //这里说明，当当前时间大于或等于 开始时间和持续时间之合时，表示动画已经结束
+        if(t>=this.startTime + this.duration){
+            this.update(this.endPos); //更新小球 的CSS属性
+            return false;
+        }
+        var pos = this.easing(t-this.startTime,this.startPos,this.endPos-this.startPos,this.duration);
+        this.update(pos);
+    }
+
+    //更新属性
+    Animate.prototype.update = function(pos){
+        this.dom.style[this.propertyName] = pos + 'px';
+    }
+    /**
+     * 摊销命令
+     * 命令模式的作用不仅是封装运算块，而且可以很方便地给命令对象增加撤销操作，就像订餐时客人可以通过电话来取消订单一样。
+     *
+     *  下面的撤销操作的实现一般是给命令对象增加一个名为unexecude或者undo的方法，
+     *  在该方法里执行execute的反向操作，在command.execute方法让小球 开始真正运动之前
+     *  我们需要先记录小球的当前位置，在unexecudu或者undo操作中，再让小球回到刚刚记录下的位置
+     */
+
+
+
+        var ball = document.querySelector('#ball');
+        var pos  = document.querySelector('#pos');
+        var moveBtn=document.querySelector('#moveBtn');
+        var cancelBtn=document.querySelector('#cancelBtn');
+        var moveCommand = function(receiver,pos)
+        {
+            this.receiver = receiver;
+            this.pos = pos;
+            this.oldPos = null;
+        }
+        moveCommand.prototype.execute = function()
+        {
+            this.receiver.start('left',this.pos,1000,'strongEaseOut');
+            this.oldPos = this.receiver.dom.getBoundingClientRect()[this.receiver.propertyName];
+            //记录小球开始移动前的位置
+        }
+
+        moveCommand.prototype.undo = function()
+        {
+            this.receiver.start('left',this.oldPos,1000,'strongEaseOut');
+        }
+        var _moveCommand
+        moveBtn.onclick = function(){
+            var animate = new Animate(ball);
+            _moveCommand = new moveCommand(animate,pos.value);
+            _moveCommand.execute();
+        }
+
+        cancelBtn.onclick = function()
+        {
+            _moveCommand.undo(); //撤消命令
+        }
+
+
+
+</script>
+</body>
+</html>

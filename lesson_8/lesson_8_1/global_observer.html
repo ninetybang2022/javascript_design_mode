@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>全局发布-订阅模式</title>
+</head>
+<body>
+    <script type="text/javascript">
+        /*
+            全局发布和订阅模式
+            在前面的例子中，
+            1、给每个发布者对象都添加了listen和trigger方法，以及一个缓存列表clientList这其实是浪费的
+            2、小明跟售楼处对象还是存在一定的耦合性，小明至少要知道售楼处对象的名字是salesOffices
+                才能完成顺序订阅到事件
+            其实现实中，买房子未要亲自去售楼处，只要把订阅的请求交给中介公司，而各大房产公司也只有需要通过中介
+            来发布房子信息，这样一来。我们不用关心消息是来自哪个房产公司，我们在意的是能否顺序收到消息，当然，为了保证订阅
+            者和发布者能顺利通信，订阅和发布都必须知道这个中介公司
+
+                同样在程序中，发布-订阅模式可以用一个全局的Event对象来实现，订阅者不需要了解消息来自哪个发布者
+                发布者也不知道消息 会摄像头给哪些订阅者，Event作为中间者，把订阅者和发布者联系起来。
+        */
+        var Events = (function(){
+
+            var clientList = {},
+                listen,
+                trigger,
+                remove;
+            //添加一个监听事件
+            listen = function(key,fn)
+            {
+                if(!clientList[key])
+                {
+                    clientList[key] = [];
+                }
+                clientList[key].push(fn);
+            }
+
+            //触发事件
+            trigger = function(){
+                var key = Array.prototype.shift.call(arguments),
+                    fns = clientList[key];
+                    if(!fns || fns.length===0)
+                    {
+                        return false;
+                    }
+                    for(var i=0,fn;fn=fns[i++];)
+                    {
+                        fn.apply(this,arguments);
+                    }
+            }
+
+            //移除绑定
+            remove = function(key,fn)
+            {
+                var fns = clientList[key];
+                if(!fns)
+                {
+                    return false;
+                }
+                if(!fn)
+                {
+                    fns && (fns.length=0);
+                }else{
+                    for(var l=fns.length-1;l>=0;l--)
+                    {
+                        var _fn = fns[l];
+                        if(_fn==fn)
+                        {
+                            fns.slice(l,1);
+                        }
+                    }
+                }
+            }
+
+            return {
+                listen:listen,
+                trigger:trigger,
+                remove:remove
+            }
+        })();
+
+        Events.listen('hello',function(){
+            console.log('goodjobs')
+        })
+
+        Events.remove('hello');
+
+
+        Events.trigger('hello');
+
+    </script>
+</body>
+</html>

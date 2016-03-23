@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>使用javascript实现通用的订阅-发布模式</title>
+</head>
+<body>
+    <script type="text/javascript">
+        /*
+             实现一个比较通用的订阅-发布模式
+             因为如果，lesson_8_2.html中只适用于某个情况，但是如果要让他适用所有的情况那么就要重写这个模式
+        */
+        var events = {
+            clitents:{},
+            //判断是否存在这个订阅者不存在就创建他为一个数组
+            listen:function(key,fn)
+            {
+                if(!this.clitents[key])
+                {
+                    this.clitents[key] = [];
+                }
+                this.clitents[key].push(fn);
+            },
+            //发布者
+            trigger:function()
+            {
+                //返回订阅者
+                var key = Array.prototype.shift.call(arguments),
+                    fns = this.clitents[key];
+                if(!fns || fns.length ===0)
+                {
+                    return false;
+                }
+                for(var i=0,fn;fn=fns[i++];)
+                {
+                    fn.apply(this,arguments);    //带上参数
+                }
+            },
+            //取消订阅模式
+            remove :function(key,fn)
+            {
+                var fns = this.clitents[key];
+                //判断订阅的事件是否存在不存在直接返回false
+                if(!fns)
+                {
+                    return false;
+                }
+                //如果没有传入相应的fn那么默认删除所有这个事件中的函数
+                if(!fn)
+                {
+                    fns && (fns.length=0);
+                }else{
+                    //否则找到相应的函数删除他
+                    for(var l=fns.length-1;l>=0;l--) //反向遍历的回调函数列表
+                    {
+                        var _fn = fns[l];
+                        if(_fn === fn)
+                        {
+                            fns.splice(l,1); //删除订阅者的回调 函数
+                        }
+                    }
+                }
+
+            }
+        }
+        //再定义一个installEvent函数，这个函数可以给所有对象都动态安装发布-订阅模式
+        var installEvent = function(obj){
+            for(var i in events)
+            {
+                obj[i] = events[i];
+            }
+        }
+
+        //测试一下
+        var salesOffices = {};
+        installEvent(salesOffices);
+        salesOffices.listen('xiaoming',fn1 = function(price){
+            console.log('小明要的房子'+price);
+        });
+        salesOffices.listen('xiaohong',fn2 = function(price){
+            console.log('小红要的房子'+price);
+        });
+        //删除了小明的订阅 下面发布的时候就只会发布xiaohong的信息
+        salesOffices.remove('xiaoming',fn1);
+        salesOffices.trigger('xiaoming',5000000);
+        salesOffices.trigger('xiaohong',100000000);
+
+    </script>
+</body>
+</html>

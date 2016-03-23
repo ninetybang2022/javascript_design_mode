@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>宏命令</title>
+</head>
+<body>
+<script>
+    /*
+        宏命令是一组命令的集合，通过执行宏命令的方式，可以一次执行一批命令，想像一下，家里有一个万能遥控器，每天回家
+        的时候，只要按一个特别的按钮，它就会帮我们关上房间门，顺便打开电脑开启QQ
+
+        我们依然要创建好各种command
+     */
+    var closeDoorCommand = {
+        execute:function(){
+            console.log('关门');
+        }
+    }
+    var openPcCommand = {
+        execute:function(){
+            console.log('开电脑')
+        }
+    }
+    var openQQCommand = {
+        execute:function(){
+            console.log('开QQ')
+        }
+    }
+    //这个是一个定义MacroCOmmand命令，他有一个add方法，表示把子命令添加进宏命令对象，当调用宏命令对象的execute方法时，
+    //会迭代这一组子命令对象，并且依次执行它们的execute方法
+    var MacroCommand = function(){
+        return{
+            commandLists:[],
+            add:function(command){
+                this.commandLists.push(command);
+            },
+            execute:function(){
+                for(var i = 0,command;command=this.commandLists[i++];)
+                {
+                    command.execute();
+                }
+            }
+        }
+    }
+
+    //也可以添加撤销功能，当调用 macroCommand.undo方法时，宏命令里包含的所有子命令对象要依次执行各自的Undo方法
+    var marcorCommand = MacroCommand();
+    marcorCommand.add(closeDoorCommand);
+    marcorCommand.add(openPcCommand);
+    marcorCommand.add(openQQCommand);
+    marcorCommand.execute();
+</script>
+</body>
+</html>
